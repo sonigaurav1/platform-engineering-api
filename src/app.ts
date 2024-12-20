@@ -1,16 +1,14 @@
-import dotenv from 'dotenv';
 import express from 'express';
 
-import type { Express, Request, Response } from 'express';
-dotenv.config();
+import { startApp } from './server';
 
-const app: Express = express();
-const port = process.env.PORT || 3000;
+import type { Express } from 'express';
 
-app.get('/', (_req: Request, res: Response) => {
-  res.send('Express + TypeScript Server');
-});
+const initialize = async (): Promise<void> => {
+  const app: Express = express();
 
-app.listen(port, () => {
-  console.debug(`[server]: Server is running at http://localhost:${port}`);
-});
+  // start the notification server
+  startApp(app);
+};
+
+initialize();
