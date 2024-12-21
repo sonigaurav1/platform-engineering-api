@@ -1,6 +1,6 @@
 import express from 'express';
 
-import connectToDb from './config/db.config';
+import connectToDb from './configs/db.config';
 import { startApp } from './server';
 import logger from './utils/logger';
 

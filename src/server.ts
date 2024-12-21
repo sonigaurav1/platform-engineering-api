@@ -2,7 +2,7 @@ import http from 'http';
 
 import 'dotenv/config';
 
-import { SERVER_DETAILS } from './config/server.config';
+import { SERVER_DETAILS } from './configs/server.config';
 import errorMiddleware from './middleware/error.middleware';
 import healthCheckMiddleware from './middleware/health.middleware';
 import routesMiddleware from './middleware/routes.middleware';

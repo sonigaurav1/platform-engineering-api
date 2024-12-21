@@ -7,14 +7,14 @@ import type { ZodTypeAny } from 'zod';
 const validate = (schema: ZodTypeAny, source: 'body' | 'params' | 'query'): RequestHandler => {
   return async (req, res, next) => {
     try {
-      await schema.parseAsync(req[source]);
+      await schema.parse(req[source]);
       next();
     } catch (err) {
       if (err instanceof z.ZodError) {
         const errMsg = fromError(err);
         res.status(400).json({
           error: `Invalid ${source} schema`,
-          errors: errMsg,
+          message: errMsg.details.map((msg) => msg.message).join('.'),
         });
       } else {
         next(err);

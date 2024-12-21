@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 
-import { saltWorkFactor } from '../config/server.config';
+import { saltWorkFactor } from '../configs/server.config';
 
 const generateHash = async (password: string): Promise<string> => {
   const salt = await bcrypt.genSalt(saltWorkFactor);

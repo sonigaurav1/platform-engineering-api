@@ -1,7 +1,7 @@
 import cors from 'cors';
 import helmet from 'helmet';
 
-import corsConfig from '../config/cors.config';
+import corsConfig from '../configs/cors.config';
 
 import type { Application } from 'express';
 
