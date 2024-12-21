@@ -2,7 +2,7 @@ import express from 'express';
 
 import UserController from '../../../controllers/user/user.controller';
 import { validateRequestBody } from '../../../middleware/validation.middleware';
-import { userCreationSchema } from '../../../schemas/user.schema';
+import { userCreationSchema } from '../../../schemas/user/user.schema';
 // import { authenticationMiddleware, mobileAuthenticationMiddleware } from '../../middleware/auth.middleware';
 
 const userRouter = express.Router();

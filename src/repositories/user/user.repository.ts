@@ -1,7 +1,7 @@
 import { UserModel } from '../../models/user/user.model';
 
 import type { DbTransactionOptions, DbQueryOptions } from '../../interfaces/query.interface';
-import type { UserDbDoc } from '../../schemas/user.schema';
+import type { UserDbDoc } from '../../schemas/user/user.schema';
 import type { ObjectId } from 'mongoose';
 
 const create = async (data: object, options: DbTransactionOptions = {}): Promise<UserDbDoc> => {

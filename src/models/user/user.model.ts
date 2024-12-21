@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 
 import { generateHash } from '../../utils/bcrypt';
 
-import type { UserDbDoc } from '../../schemas/user.schema';
+import type { UserDbDoc } from '../../schemas/user/user.schema';
 import type { Model } from 'mongoose';
 
 const userSchema = new Schema<UserDbDoc>(

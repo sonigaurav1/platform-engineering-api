@@ -1,6 +1,9 @@
 import { type Document, type Schema } from 'mongoose';
 import { z } from 'zod';
 
+import { type CommonDbField } from '../shared/shared.schema';
+
+// User schema start here
 export const userCreationSchema = z.object({
   firstName: z.string({ required_error: 'First name is required' }).min(3, { message: 'First name must be 3 characters long' }),
   lastName: z.string({ required_error: 'Last name is required' }).min(3, { message: 'Last name must be 3 characters long' }),
@@ -13,7 +16,17 @@ export const userCreationSchema = z.object({
 
 export type UserType = z.infer<typeof userCreationSchema>;
 
-export interface UserDbDoc extends UserType, Document {
+export interface UserDbDoc extends UserType, Document, CommonDbField {
   role: Schema.Types.ObjectId;
-  isDeleted: boolean;
 }
+
+// Role Schema start here
+export const userRoleCreationSchema = z.object({
+  label: z.string({ required_error: 'Label is required' }).min(3, { message: 'Label must be 3 characters long' }),
+  adminAccess: z.boolean(),
+  scopes: z.array(z.string()),
+});
+
+export type RoleType = z.infer<typeof userRoleCreationSchema>;
+
+export interface RoleDbDoc extends RoleType, Document, CommonDbField {}
