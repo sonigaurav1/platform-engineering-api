@@ -6,12 +6,12 @@ const dbPrefix = 'platform-engineering';
 
 const getDbName = (environment: string | undefined) => {
   if (environment === 'staging') {
-    return `${dbPrefix}-${environment}-database`;
+    return `${environment}-${dbPrefix}`;
   } else if (environment === 'production') {
-    return `${dbPrefix}-${environment}-database`;
+    return `${environment}-${dbPrefix}`;
   }
 
-  return `${dbPrefix}-${environment}-database`;
+  return `${environment}-${dbPrefix}`;
 };
 
 const connectToDb = async ({ dbUri, environment }: { dbUri: string; environment: string }): Promise<void> => {

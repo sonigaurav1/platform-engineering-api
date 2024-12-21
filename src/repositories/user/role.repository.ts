@@ -12,7 +12,7 @@ const create = async (data: object, options: DbTransactionOptions = {}): Promise
 const bulkCreate = async (data: []): Promise<RoleDbDoc[]> => RoleModel.insertMany(data);
 
 const update = async (condition: object, updatedData: object, options: DbTransactionOptions = {}): Promise<RoleDbDoc | null> =>
-  RoleModel.findOneAndUpdate(condition, updatedData, { new: true, ...options });
+  RoleModel.findOneAndUpdate({ ...condition, isDeleted: false }, updatedData, { new: true, ...options });
 
 const destroy = async (condition: object = {}, options: DbTransactionOptions = {}): Promise<RoleDbDoc | null> =>
   RoleModel.findOneAndDelete(condition, { ...options });
