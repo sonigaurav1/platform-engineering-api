@@ -3,3 +3,7 @@ export const SERVER_DETAILS = {
 };
 
 export const saltWorkFactor = 10;
+
+export const EMAIL_CONFIG = {
+  DEFAULT_SENDER: 'account@avendi.me',
+};
