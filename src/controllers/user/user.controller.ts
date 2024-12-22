@@ -3,7 +3,8 @@
 // import createError from '../../utils/http.error';
 
 // import type { CustomRequest } from '../../interfaces/auth.interface';
-import { DynamicMessages } from '../../constants/error';
+import { AUTH_CONFIG } from '../../configs/server.config';
+import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserService from '../../services/user/user.service';
 
 import type { Request, Response, NextFunction } from 'express';
@@ -21,20 +22,20 @@ const createNewUser = async (req: Request, res: Response, next: NextFunction): P
   }
 };
 
-// const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-//   try {
-//     const { refreshToken, accessToken } = await UserService.loginUser(req.body);
-//     res.cookie(AUTH_CONFIG.refreshToken, refreshToken, {
-//       // secure: req.secure,
-//       // sameSite: 'lax',
-//       // httpOnly: req.secure,
-//       maxAge: AUTH_CONFIG.refreshTokenMaxAge,
-//     });
-//     res.status(200).json({ message: PLAIN_RESPONSE_MSG.validLogin, success: true, accessToken });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { refreshToken, accessToken } = await UserService.loginUser(req.body);
+    res.cookie(AUTH_CONFIG.refreshToken, refreshToken, {
+      secure: req.secure,
+      sameSite: 'lax',
+      httpOnly: req.secure,
+      maxAge: AUTH_CONFIG.refreshTokenMaxAge,
+    });
+    res.status(200).json({ message: PLAIN_RESPONSE_MSG.validLogin, success: true, accessToken });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // const loginEmployeeUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
 //   try {
@@ -113,7 +114,7 @@ const createNewUser = async (req: Request, res: Response, next: NextFunction): P
 
 const UserController = {
   createNewUser,
-  //   loginUser,
+  loginUser,
   //   changePassword,
   //   getUser,
   //   passwordResetRequest,

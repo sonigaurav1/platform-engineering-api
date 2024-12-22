@@ -22,8 +22,8 @@ export interface UserDbDoc extends UserType, Document, CommonDbField {
 
 // User Login Schema
 export const userLoginSchema = z.object({
-  email: z.string(),
-  password: z.string(),
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z.string({ required_error: 'Password is required' }),
 });
 
 export type UserLoginType = z.infer<typeof userLoginSchema>;

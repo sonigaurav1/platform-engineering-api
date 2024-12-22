@@ -2,14 +2,14 @@ import express from 'express';
 
 import UserController from '../../../controllers/user/user.controller';
 import { validateRequestBody } from '../../../middleware/validation.middleware';
-import { userCreationSchema } from '../../../schemas/user/user.schema';
+import { userCreationSchema, userLoginSchema } from '../../../schemas/user/user.schema';
 // import { authenticationMiddleware, mobileAuthenticationMiddleware } from '../../middleware/auth.middleware';
 
 const userRouter = express.Router();
 
 userRouter.post('/register', validateRequestBody(userCreationSchema), UserController.createNewUser);
-// userRouter.post('/login-employee', AuthValidator.validateEmployeeLoginPayload, UserController.loginEmployeeUser);
-// userRouter.post('/login', AuthValidator.validateUserLoginPayload, UserController.loginUser);
+userRouter.post('/login', validateRequestBody(userLoginSchema), UserController.loginUser);
+
 // userRouter.post(
 //   '/employee-change-password',
 //   mobileAuthenticationMiddleware,
