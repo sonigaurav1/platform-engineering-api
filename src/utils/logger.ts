@@ -4,6 +4,7 @@ import winston, { format } from 'winston';
 
 import type { Logger } from 'winston';
 import 'winston-daily-rotate-file';
+import 'dotenv/config';
 
 const LOG_DIR = {
   ERROR_FILE: 'log/error',
@@ -38,13 +39,15 @@ const infoOnlyFilter = format((info) => {
 });
 
 // Winston transports
-const winstonTransports = [
+const winstonTransports: winston.transport[] = [
   // Console transport for all logs
   new winston.transports.Console({
     format: format.combine(format.colorize(), format.simple()),
     level: LOG_LEVEL.DEBUG,
   }),
+];
 
+const fileLoggingTransport: winston.transport[] = [
   // Daily rotate file for info logs (excluding error logs)
   new winston.transports.DailyRotateFile({
     format: format.combine(format.timestamp(), infoOnlyFilter(), format.json()),
@@ -65,6 +68,10 @@ const winstonTransports = [
     filename: '%DATE%-error.log',
   }),
 ];
+
+if (process.env.ENVIRONMENT !== 'development') {
+  winstonTransports.push(...fileLoggingTransport);
+}
 
 // Create the logger instance
 const logger: Logger = winston.createLogger({

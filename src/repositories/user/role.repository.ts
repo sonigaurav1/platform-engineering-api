@@ -21,7 +21,6 @@ const softDelete = async (condition: object = {}): Promise<RoleDbDoc | null> => 
 
 const findOne = async (condition: object = {}, options: DbQueryOptions = {}): Promise<RoleDbDoc | null> => {
   const query = RoleModel.findOne({ ...condition, isDeleted: false });
-
   if (options.session) {
     query.session(options.session);
   }

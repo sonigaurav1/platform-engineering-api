@@ -1,18 +1,20 @@
 // import { AUTH_CONFIG } from '../../config/global.config';
-import { DynamicMessages } from '../../constants/error';
 // import UserService from '../../services/user.service';
 // import createError from '../../utils/http.error';
 
 // import type { CustomRequest } from '../../interfaces/auth.interface';
+import { DynamicMessages } from '../../constants/error';
+import UserService from '../../services/user/user.service';
+
 import type { Request, Response, NextFunction } from 'express';
 
-const createNewUser = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createNewUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // const user = await UserService.saveUser(req.body);
+    const user = await UserService.saveUser(req.body);
     res.status(201).json({
       message: DynamicMessages.createMessage('User'),
       success: true,
-      //   user,
+      user,
     });
   } catch (error) {
     next(error);

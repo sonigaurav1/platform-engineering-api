@@ -67,6 +67,7 @@ export const PLAIN_RESPONSE_MSG = {
   invalidRequest: 'Invalid Request',
   invalidDate: 'Date should be in format mm/dd/yyyy',
   internalServerError: 'Internal Server Error',
+  somethingWrong: 'Something went wrong',
   passwordNotMatch: 'Password and Confirm Password does not match',
   invalidRole: 'Invalid Role',
   invalidFile: 'Invalid file type',

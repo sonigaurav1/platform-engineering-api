@@ -20,6 +20,14 @@ export interface UserDbDoc extends UserType, Document, CommonDbField {
   role: Schema.Types.ObjectId;
 }
 
+// User Login Schema
+export const userLoginSchema = z.object({
+  email: z.string(),
+  password: z.string(),
+});
+
+export type UserLoginType = z.infer<typeof userLoginSchema>;
+
 // Role Schema start here
 export const userRoleCreationSchema = z.object({
   label: z.string({ required_error: 'Label is required' }).min(3, { message: 'Label must be 3 characters long' }),
