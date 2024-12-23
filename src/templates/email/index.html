@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to 4EverLending USA!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h3 {
+            color: #333;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 16px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Welcome to 4EverLending USA!</h3>
+        <p>Dear {{userFirstName}},</p>
+        <p>Welcome to 4EverLending USA! We’re thrilled to have you with us as you take the exciting first step towards owning a new property. Our team is dedicated to providing you with the best support and guidance throughout your home buying journey.</p>
+        <h3>Here’s How to Get Started:</h3>
+        <ul>
+            <li>Log in to Your Account: Click <a href="{{loginUrl}}" target="_blank">here</a> to log in to your account and access our user-friendly platform.</li>
+            <li>Complete Your Profile: Fill out your profile with the necessary information so we can better understand your needs and preferences.</li>
+            <li>Explore Properties Options: Browse through various properties options tailored to your needs.</li>
+            <li>Book for Site Visit: Our experienced Real Estate Agents are here to help.</li>
+        </ul>
+        <p>Feel free to reach out with any questions or to schedule a site visit.</p>
+        <p>Welcome aboard, and let’s get started!</p>
+        <p class="footer">Best regards,<br>4EverLendingUSA</p>
+    </div>
+</body>
+</html>
