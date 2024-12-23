@@ -4,14 +4,17 @@ import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserRoleRepository from '../../repositories/user/role.repository';
 import UserRepository from '../../repositories/user/user.repository';
 import { compareHash, generateHash } from '../../utils/bcrypt';
+import { generateOtp } from '../../utils/crypto';
 import createError from '../../utils/http.error';
 import jwtGenerator from '../../utils/jwt.generator';
 import logger from '../../utils/logger';
 import { removeKey } from '../../utils/object';
 import { checkIfEmpty } from '../../utils/validation';
+import EmailService from '../email/email.service';
+import OtpService from '../email/otp.service';
 
 import type { DbTransactionOptions } from '../../interfaces/query.interface';
-import type { UserDbDoc, UserLoginType, UserPasswordChangeType, UserType } from '../../schemas/user/user.schema';
+import type { UserDbDoc, UserLoginType, UserPasswordChangeType, UserPasswordResetRequestType, UserType } from '../../schemas/user/user.schema';
 
 interface JWTGenerator {
   accessToken: string;
@@ -41,8 +44,17 @@ const saveUser = async (payload: UserType, options: DbTransactionOptions = {}): 
     role: role._id,
   };
 
-  const savedUser = await UserRepository.create(userData, options);
-  const response = removeKey(savedUser.toJSON(), 'password');
+  const newUser = await UserRepository.create(userData, options);
+  const response = removeKey(newUser.toJSON(), 'password');
+
+  const otp = generateOtp();
+  await OtpService.createOtp({ user: newUser, otp });
+
+  EmailService.sendAccountCreationEmailToUser({
+    email: newUser.email,
+    otp: otp,
+    url: 'http://localhost:5173/verfy-account',
+  });
   return response;
 };
 
@@ -105,10 +117,27 @@ const changePassword = async (data: { userId: string; payload: UserPasswordChang
   await UserRepository.update(condition, updatedData);
 };
 
+const passwordResetRequest = async (payload: UserPasswordResetRequestType): Promise<void> => {
+  const user = await UserRepository.findOne({ email: payload.email });
+  if (!user) {
+    throw createError(404, DynamicMessages.notFoundMessage('User with this email'));
+  }
+
+  const otp = generateOtp();
+  await OtpService.createOtp({ user, otp });
+
+  await EmailService.sendPasswordResetRequestEmail({
+    email: user.email,
+    code: otp,
+    url: 'http://localhost:5173/new-password',
+  });
+};
+
 const UserService = {
   saveUser,
   loginUser,
   changePassword,
+  passwordResetRequest,
 };
 
 export default UserService;

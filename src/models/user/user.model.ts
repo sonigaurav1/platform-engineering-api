@@ -22,6 +22,11 @@ const userSchema = new Schema<UserDbDoc>(
       required: true,
       min: 4,
     },
+    status: {
+      type: String,
+      default: 'inactive',
+      enum: ['active', 'inactive'],
+    },
     isDeleted: {
       type: Boolean,
       default: false,

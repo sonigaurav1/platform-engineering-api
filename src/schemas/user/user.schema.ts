@@ -18,6 +18,7 @@ export type UserType = z.infer<typeof userCreationSchema>;
 
 export interface UserDbDoc extends UserType, Document, CommonDbField {
   role: Schema.Types.ObjectId;
+  status: string;
 }
 
 // User Login Schema
@@ -44,6 +45,13 @@ export const userPasswordChangeSchema = z
   });
 
 export type UserPasswordChangeType = z.infer<typeof userPasswordChangeSchema>;
+
+// User Password Reset Request Schema
+export const userPasswordResetRequestSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+});
+
+export type UserPasswordResetRequestType = z.infer<typeof userPasswordResetRequestSchema>;
 
 // User Role Schema
 export const userRoleCreationSchema = z.object({

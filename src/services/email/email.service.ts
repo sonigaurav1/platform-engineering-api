@@ -19,10 +19,10 @@ const createHTMLToSend = (pathName: string, replacements: any): string => {
 
 const sendPasswordResetRequestEmail = async ({ email, code, url }: { email: string; code: string; url: string }): Promise<void> => {
   const subject = 'Password Reset Request';
-  const resetPasswordUrl = `${url}/reset-password/?email=${email}&code=${code}`;
+  const resetPasswordUrl = `${url}/?email=${email}&code=${code}`;
   const message = `Please copy and paste this url [${resetPasswordUrl}] to reset your email. If you had not used the email, you can safely ignore this message.`;
 
-  const pathName = path.join(__dirname, '../templates/email/password-reset-email.html');
+  const pathName = path.join(__dirname, '../../templates/email/password-reset-email.html');
   const html = createHTMLToSend(pathName, { resetPasswordUrl, email });
 
   await sendEmail({
@@ -33,12 +33,12 @@ const sendPasswordResetRequestEmail = async ({ email, code, url }: { email: stri
   });
 };
 
-const sendAccountCreationEmailToUser = async ({ email, password, baseUrl }: { email: string; password: string; baseUrl: string }): Promise<void> => {
+const sendAccountCreationEmailToUser = async ({ email, otp, url }: { email: string; otp: string; url: string }): Promise<void> => {
   const subject = 'Account Creation';
-  const verificationUrl = `${baseUrl}/account-creation/?email=${email}&passwd=${password}`;
+  const verificationUrl = `${url}/?email=${email}&otp=${otp}`;
   const message = `Please copy and paste this url [${verificationUrl}] to verify your email. If you had not used the email, you can safely ignore this message.`;
 
-  const pathName = path.join(__dirname, '../templates/email/verify-email.html');
+  const pathName = path.join(__dirname, '../../templates/email/verify-email.html');
   const html = createHTMLToSend(pathName, { verificationUrl, email });
 
   await sendEmail({
