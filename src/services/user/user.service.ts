@@ -3,7 +3,7 @@ import { JWT_SECRET_KEY } from '../../configs/server.config';
 import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserRoleRepository from '../../repositories/user/role.repository';
 import UserRepository from '../../repositories/user/user.repository';
-import { compareHash } from '../../utils/bcrypt';
+import { compareHash, generateHash } from '../../utils/bcrypt';
 import createError from '../../utils/http.error';
 import jwtGenerator from '../../utils/jwt.generator';
 import logger from '../../utils/logger';
@@ -11,7 +11,7 @@ import { removeKey } from '../../utils/object';
 import { checkIfEmpty } from '../../utils/validation';
 
 import type { DbTransactionOptions } from '../../interfaces/query.interface';
-import type { UserDbDoc, UserLoginType, UserType } from '../../schemas/user/user.schema';
+import type { UserDbDoc, UserLoginType, UserPasswordChangeType, UserType } from '../../schemas/user/user.schema';
 
 interface JWTGenerator {
   accessToken: string;
@@ -82,9 +82,33 @@ const loginUser = async (
   };
 };
 
+const changePassword = async (data: { userId: string; payload: UserPasswordChangeType }): Promise<void> => {
+  const { userId, payload } = data;
+
+  const user = await UserRepository.findById(userId);
+  if (!user) {
+    throw createError(404, DynamicMessages.notFoundMessage('User'));
+  }
+
+  const authenticateUser = await hasSamePassword(payload.currentPassword, user);
+
+  if (!authenticateUser) {
+    throw createError(401, 'Invalid current password');
+  }
+
+  const hashPassword = await generateHash(payload.newPassword);
+  const updatedData = { password: hashPassword };
+  const condition = {
+    _id: user._id,
+  };
+
+  await UserRepository.update(condition, updatedData);
+};
+
 const UserService = {
   saveUser,
   loginUser,
+  changePassword,
 };
 
 export default UserService;

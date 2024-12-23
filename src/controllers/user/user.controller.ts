@@ -7,6 +7,7 @@ import { AUTH_CONFIG } from '../../configs/server.config';
 import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserService from '../../services/user/user.service';
 
+import type { CustomRequest } from '../../interfaces/auth.interface';
 import type { Request, Response, NextFunction } from 'express';
 
 const createNewUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -32,6 +33,18 @@ const loginUser = async (req: Request, res: Response, next: NextFunction): Promi
       maxAge: AUTH_CONFIG.refreshTokenMaxAge,
     });
     res.status(200).json({ message: PLAIN_RESPONSE_MSG.validLogin, success: true, accessToken });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const changePassword = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    await UserService.changePassword({ userId: req.user, payload: req.body });
+    res.status(200).json({
+      message: DynamicMessages.updateMessage('Password'),
+      success: true,
+    });
   } catch (error) {
     next(error);
   }
@@ -115,7 +128,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction): Promi
 const UserController = {
   createNewUser,
   loginUser,
-  //   changePassword,
+  changePassword,
   //   getUser,
   //   passwordResetRequest,
   //   resetPassword,
