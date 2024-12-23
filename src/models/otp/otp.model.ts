@@ -18,7 +18,7 @@ const otpSchema = new Schema<OtpDoc>(
     },
     createdAt: {
       type: Date,
-      expires: 3600,
+      expires: 30,
       default: Date.now,
     },
   },

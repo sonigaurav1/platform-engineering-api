@@ -14,7 +14,15 @@ import EmailService from '../email/email.service';
 import OtpService from '../email/otp.service';
 
 import type { DbTransactionOptions } from '../../interfaces/query.interface';
-import type { UserDbDoc, UserLoginType, UserPasswordChangeType, UserPasswordResetRequestType, UserType } from '../../schemas/user/user.schema';
+import type {
+  UserAccountVerificationType,
+  UserDbDoc,
+  UserLoginType,
+  UserPasswordChangeType,
+  UserPasswordResetRequestType,
+  UserPasswordResetType,
+  UserType,
+} from '../../schemas/user/user.schema';
 
 interface JWTGenerator {
   accessToken: string;
@@ -133,11 +141,50 @@ const passwordResetRequest = async (payload: UserPasswordResetRequestType): Prom
   });
 };
 
+const resetPassword = async (payload: UserPasswordResetType): Promise<void> => {
+  const user = await UserRepository.findOne({ email: payload.email });
+  if (!user) {
+    throw createError(404, DynamicMessages.notFoundMessage('User with this email'));
+  }
+
+  const isValidOtp = await OtpService.verifyOtp({ user, otp: payload.otp });
+  if (!isValidOtp) {
+    throw createError(401, PLAIN_RESPONSE_MSG.invalidOtp);
+  }
+
+  const passwordHash = await generateHash(payload.newPassword);
+  const updatedData = { password: passwordHash };
+  const condition = { _id: user._id };
+
+  await UserRepository.update(condition, updatedData);
+  OtpService.deleteOtp({ otp: payload.otp });
+};
+
+const verifyAccount = async (payload: UserAccountVerificationType): Promise<void> => {
+  const user = await UserRepository.findOne({ email: payload.email });
+  if (!user) {
+    throw createError(404, DynamicMessages.notFoundMessage('User with this email'));
+  }
+
+  const isValidOtp = await OtpService.verifyOtp({ user, otp: payload.otp });
+  if (!isValidOtp) {
+    throw createError(401, PLAIN_RESPONSE_MSG.invalidOtp);
+  }
+
+  const updatedData = { status: 'active' };
+  const condition = { _id: user._id };
+
+  await UserRepository.update(condition, updatedData);
+  OtpService.deleteOtp({ otp: payload.otp });
+};
+
 const UserService = {
   saveUser,
   loginUser,
   changePassword,
   passwordResetRequest,
+  resetPassword,
+  verifyAccount,
 };
 
 export default UserService;

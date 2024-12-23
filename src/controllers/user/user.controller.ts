@@ -23,6 +23,18 @@ const createNewUser = async (req: Request, res: Response, next: NextFunction): P
   }
 };
 
+const verifyUserAccount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    await UserService.verifyAccount(req.body);
+    res.status(200).json({
+      message: PLAIN_RESPONSE_MSG.verifiedAccount,
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { refreshToken, accessToken } = await UserService.loginUser(req.body);
@@ -62,11 +74,25 @@ const passwordResetRequest = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+const resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    await UserService.resetPassword(req.body);
+    res.status(200).json({
+      message: PLAIN_RESPONSE_MSG.passwordReset,
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const UserController = {
   createNewUser,
   loginUser,
   changePassword,
   passwordResetRequest,
+  resetPassword,
+  verifyUserAccount,
 };
 
 export default UserController;

@@ -15,9 +15,16 @@ const verifyOtp = async ({ user, otp }: { user: UserDbDoc; otp: string | number 
     user: user._id,
   });
 
+const deleteOtp = async ({ otp }: { otp: string | number }): Promise<void> => {
+  OtpRepository.destroy({
+    otp,
+  });
+};
+
 const OtpService = {
   createOtp,
   verifyOtp,
+  deleteOtp,
 };
 
 export default OtpService;

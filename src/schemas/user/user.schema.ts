@@ -21,6 +21,14 @@ export interface UserDbDoc extends UserType, Document, CommonDbField {
   status: string;
 }
 
+// User Account Verification   Schema
+export const userAccountVerificationSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  otp: z.number(),
+});
+
+export type UserAccountVerificationType = z.infer<typeof userAccountVerificationSchema>;
+
 // User Login Schema
 export const userLoginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -52,6 +60,24 @@ export const userPasswordResetRequestSchema = z.object({
 });
 
 export type UserPasswordResetRequestType = z.infer<typeof userPasswordResetRequestSchema>;
+
+// User Password Reset  Schema
+export const userPasswordResetSchema = z
+  .object({
+    email: z.string().email({ message: 'Invalid email address' }),
+    otp: z.number(),
+    newPassword: z
+      .string({ required_error: 'Password is required' })
+      .min(5, { message: 'Password must be at least 5 characters long' })
+      .max(15, { message: 'Password must be no more than 15 characters long' }),
+    confirmPassword: z.string({ required_error: 'Confirmation password is required.' }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match.',
+    path: ['confirmPassword'],
+  });
+
+export type UserPasswordResetType = z.infer<typeof userPasswordResetSchema>;
 
 // User Role Schema
 export const userRoleCreationSchema = z.object({
