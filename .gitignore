@@ -143,4 +143,10 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
+terraform
+terraform_templates
+terraform/*.tfstate
+terraform/.terraform/
+
 # End of https://www.toptal.com/developers/gitignore/api/node
+
