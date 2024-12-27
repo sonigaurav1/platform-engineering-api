@@ -178,6 +178,11 @@ const verifyAccount = async (payload: UserAccountVerificationType): Promise<void
   OtpService.deleteOtp({ otp: payload.otp });
 };
 
+const getUserInfoById = async (id: string) => {
+  const user = await UserRepository.findById(id);
+  return user;
+};
+
 const UserService = {
   saveUser,
   loginUser,
@@ -185,6 +190,7 @@ const UserService = {
   passwordResetRequest,
   resetPassword,
   verifyAccount,
+  getUserInfoById,
 };
 
 export default UserService;

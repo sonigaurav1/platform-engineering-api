@@ -1,5 +1,6 @@
 import { AUTH_CONFIG, JWT_SECRET_KEY } from '../configs/server.config';
 import { PLAIN_RESPONSE_MSG } from '../constants/error';
+import UserService from '../services/user/user.service';
 import createError from '../utils/http.error';
 import jwtGenerator from '../utils/jwt.generator';
 import { getValue } from '../utils/object';
@@ -50,5 +51,11 @@ export const authenticationMiddleware = (req: CustomRequest, res: Response, next
 
   res.setHeader(AUTH_CONFIG.authHeader, `${AUTH_CONFIG.bearerName} ${newAccessToken}`);
 
+  next();
+};
+
+export const attachUserInfo = async (req: CustomRequest, _res: Response, next: NextFunction) => {
+  const user = await UserService.getUserInfoById(req.user);
+  req.user = user;
   next();
 };
