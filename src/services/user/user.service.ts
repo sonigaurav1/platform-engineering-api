@@ -179,7 +179,12 @@ const verifyAccount = async (payload: UserAccountVerificationType): Promise<void
 };
 
 const getUserInfoById = async (id: string) => {
-  const user = await UserRepository.findById(id);
+  const user = await UserRepository.findOne(
+    {
+      _id: id,
+    },
+    { select: ['_id', 'email'] },
+  );
   return user;
 };
 

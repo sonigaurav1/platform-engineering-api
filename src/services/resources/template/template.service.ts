@@ -4,9 +4,9 @@ import { dirname, join } from 'path';
 
 import Handlebars from 'handlebars';
 
-import logger from '../../utils/logger';
+import logger from '../../../utils/logger';
 
-const getTerraformTemplateFileDirectory = () => join(__dirname, '../../../terraform_templates');
+const getTerraformTemplateFileDirectory = () => join(__dirname, '../../../../terraform_template');
 
 async function writeFileToDirectory(data: { filePath: string; content: string }) {
   const directory = dirname(data.filePath); // Extract the directory path
@@ -36,25 +36,43 @@ const compileTemplate = (data: { content: object; filePath: string }) => {
   return terraformFileContent;
 };
 
-const generateTerraformConfigFile = (content: object) => {
+const generateTerraformConfigFile = (data: { content: object; fileWritePath: string }) => {
   const workingDir = getTerraformTemplateFileDirectory();
-  const terraformFilePath = join(workingDir, 'terraform.tf');
+  const terraformFilePath = join(workingDir, 'terraform.tpl');
 
   const fileData = compileTemplate({
     filePath: terraformFilePath,
-    content: content,
+    content: data.content,
   });
 
   logger.info(fileData);
 
   writeFileToDirectory({
-    filePath: 'terraform/test/terraform.tf',
+    filePath: data.fileWritePath,
+    content: fileData,
+  });
+};
+
+const generateTerraformEC2File = (data: { content: object; fileWritePath: string }) => {
+  const workingDir = getTerraformTemplateFileDirectory();
+  const terraformFilePath = join(workingDir, 'ec2.tpl');
+
+  const fileData = compileTemplate({
+    filePath: terraformFilePath,
+    content: data.content,
+  });
+
+  logger.info(fileData);
+
+  writeFileToDirectory({
+    filePath: data.fileWritePath,
     content: fileData,
   });
 };
 
 const TemplateService = {
   generateTerraformConfigFile,
+  generateTerraformEC2File,
 };
 
 export default TemplateService;

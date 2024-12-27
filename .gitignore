@@ -144,7 +144,6 @@ dist
 .svelte-kit
 
 terraform
-terraform_templates
 terraform/*.tfstate
 terraform/.terraform/
 
