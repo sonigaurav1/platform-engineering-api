@@ -1,5 +1,5 @@
 import { transformResourceTags } from '../../../helpers/payloadTransformer.helper';
-import { getResourceFileWrittenPath } from '../../../helpers/resource.helper';
+import { convertInstanceCountToString, getResourceFileWrittenPath } from '../../../helpers/resource.helper';
 import logger from '../../../utils/logger';
 import { executeTerraformCommand } from '../execution/execution.service';
 import TemplateService from '../template/template.service';
@@ -26,11 +26,10 @@ const createEC2Instance = async (userData: object, ec2Data: EC2Instance) => {
 
     const ec2InstanceFilePromise = TemplateService.generateTerraformEC2File({
       content: {
-        TAG_LIST: `{
-          ${resourceTags}
-        }`,
+        TAG_LIST: resourceTags,
         INSTANCE_TYPE: `"${ec2Data.instanceType}"`,
         AMI: `"${ec2Data.amiId}"`,
+        NUMBER_OF_INSTANCE: convertInstanceCountToString(ec2Data.numberOfInstance),
       },
       fileWritePath: terraformEC2File,
     });

@@ -20,4 +20,6 @@ export const executeTerraformCommand = async (data: { terraformWritePath: string
   logger.info(`Terraform apply for ${resourceName} completed successfully!`);
 
   logger.info(`${resourceName} created successfully!`);
+
+  await runCommand('terraform show', terraformWritePath);
 };

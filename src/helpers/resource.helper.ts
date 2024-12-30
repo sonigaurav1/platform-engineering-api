@@ -9,3 +9,12 @@ export const getResourceFileWrittenPath = (data: { userData: object; resourceNam
 
   return terraformWritePath;
 };
+
+export const convertInstanceCountToString = (count: number): string => {
+  if (count < 1) {
+    throw new Error('Count must be greater than or equal to 1');
+  }
+  const listOfNumber = Array.from({ length: count }, (_, i) => i + 1);
+
+  return listOfNumber.map((num) => `"${num}"`).join(',');
+};
