@@ -36,7 +36,7 @@ const compileTemplate = (data: { content: object; filePath: string }) => {
   return terraformFileContent;
 };
 
-const generateTerraformConfigFile = (data: { content: object; fileWritePath: string }) => {
+const generateTerraformConfigFile = async (data: { content: object; fileWritePath: string }) => {
   const workingDir = getTerraformTemplateFileDirectory();
   const terraformFilePath = join(workingDir, 'terraform.tpl');
 
@@ -47,13 +47,13 @@ const generateTerraformConfigFile = (data: { content: object; fileWritePath: str
 
   logger.info(fileData);
 
-  writeFileToDirectory({
+  return writeFileToDirectory({
     filePath: data.fileWritePath,
     content: fileData,
   });
 };
 
-const generateTerraformEC2File = (data: { content: object; fileWritePath: string }) => {
+const generateTerraformEC2File = async (data: { content: object; fileWritePath: string }) => {
   const workingDir = getTerraformTemplateFileDirectory();
   const terraformFilePath = join(workingDir, 'ec2.tpl');
 
@@ -64,7 +64,7 @@ const generateTerraformEC2File = (data: { content: object; fileWritePath: string
 
   logger.info(fileData);
 
-  writeFileToDirectory({
+  return writeFileToDirectory({
     filePath: data.fileWritePath,
     content: fileData,
   });
