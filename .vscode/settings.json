@@ -24,5 +24,8 @@
   "cSpell.words": ["fieldname", "tawjeeh", "tawjhee", "zipcode"],
   "[dotenv]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform"
   }
 }

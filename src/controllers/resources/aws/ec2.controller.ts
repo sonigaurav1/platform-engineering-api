@@ -5,7 +5,7 @@ import type { NextFunction, Response } from 'express';
 
 const createEC2Instance = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const ec2 = await EC2Service.createEC2Instance(req.user);
+    const ec2 = await EC2Service.createEC2Instance(req.user, req.body);
     res.status(201).json({
       success: true,
       message: 'EC2 instance created successfully',

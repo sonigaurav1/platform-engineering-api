@@ -14,7 +14,7 @@ const validate = (schema: ZodTypeAny, source: 'body' | 'params' | 'query'): Requ
         const errMsg = fromError(err);
         res.status(400).json({
           error: `Invalid ${source} schema`,
-          message: errMsg.details.map((msg) => msg.message).join('.'),
+          message: errMsg.details.map((msg) => msg.message)[0],
         });
       } else {
         next(err);
