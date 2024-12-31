@@ -4,6 +4,7 @@ import type { Schema, Document } from 'mongoose';
 export interface ResourceDetails {
   userId: Schema.Types.ObjectId;
   resourceId: string;
+  resourceExecutionPath: string;
   terraformResourceId: string;
   terraformStateFileS3Key: string;
   resourceType: string;

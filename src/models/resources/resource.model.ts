@@ -13,6 +13,10 @@ const resourceSchema = new Schema<ResourceDBDoc>(
       type: String,
       required: true,
     },
+    resourceExecutionPath: {
+      type: String,
+      required: true,
+    },
     terraformResourceId: {
       type: String,
     },

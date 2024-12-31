@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 import type { DbQueryOptions, DbTransactionOptions } from '../interfaces/query.interface';
 import type { Model, Document, ObjectId } from 'mongoose';
 
@@ -65,6 +67,10 @@ const findAll = async <T extends Document>(model: Model<T>, condition: object = 
   return query.exec(); // Execute the query
 };
 
+const getDbSession = async () => {
+  return mongoose.startSession();
+};
+
 const BaseRepository = {
   create,
   update,
@@ -73,6 +79,7 @@ const BaseRepository = {
   findOne,
   findById,
   findAll,
+  getDbSession,
 };
 
 export default BaseRepository;
