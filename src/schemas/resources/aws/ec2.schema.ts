@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import type { CommonDbField } from '../../shared/shared.schema';
+import type { Schema } from 'mongoose';
+
 enum InstanceType {
   T2_MICRO = 't2.micro',
   T2_SMALL = 't2.small',
@@ -15,3 +18,8 @@ export const createEC2InstanceSchema = z.object({
 });
 
 export type EC2Instance = z.infer<typeof createEC2InstanceSchema>;
+
+export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {
+  userId: Schema.Types.ObjectId;
+  status: string;
+}
