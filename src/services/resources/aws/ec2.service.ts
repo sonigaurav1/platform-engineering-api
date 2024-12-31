@@ -98,9 +98,26 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
   }
 };
 
+const deleteEC2Instance = async (resourceId: string) => {
+  try {
+    const callBack = async (data: { resourceId: string; status: string }) => {
+      // EC2Repository.softDelete({ resourceId: data.resourceId, userId: userData.id });
+      updateEC2InstanceStatus({ resourceId: data.resourceId, status: data.status });
+    };
+
+    const response = await ExecutionService.destroyResourceInCloud({ resourceId: resourceId, callBack: callBack });
+
+    return response;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+};
+
 const EC2Service = {
   createEC2Instance,
   updateEC2InstanceStatus,
+  deleteEC2Instance,
 };
 
 export default EC2Service;

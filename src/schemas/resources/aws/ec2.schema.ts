@@ -17,6 +17,10 @@ export const createEC2InstanceSchema = z.object({
   numberOfInstance: z.number({ required_error: 'Number of instances is required' }).lte(3, `Number of instances should be less than or equal to 3`),
 });
 
+export const deleteEC2InstanceSchema = z.object({
+  resourceId: z.string({ required_error: 'Resource ID is required' }).min(20, 'Resource ID should be of 20 characters'),
+});
+
 export type EC2Instance = z.infer<typeof createEC2InstanceSchema>;
 
 export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {

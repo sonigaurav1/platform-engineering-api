@@ -16,8 +16,22 @@ const createEC2Instance = async (req: CustomRequest, res: Response, next: NextFu
   }
 };
 
+const deleteEC2Instance = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  const { resourceId } = req.params;
+  try {
+    await EC2Service.deleteEC2Instance(resourceId);
+    res.status(200).json({
+      success: true,
+      message: 'EC2 instance deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const EC2Controller = {
   createEC2Instance,
+  deleteEC2Instance,
 };
 
 export default EC2Controller;
