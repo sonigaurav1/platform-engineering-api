@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { CommonDbField } from '../../shared/shared.schema';
-import type { Schema } from 'mongoose';
+import type { Schema, Document } from 'mongoose';
 
 enum InstanceType {
   T2_MICRO = 't2.micro',

@@ -1,5 +1,7 @@
 import { Schema, model } from 'mongoose';
 
+import { RESOURCE_STATUS, RESOURCE_STATUS_DB_ENUM } from '../../../constants/enum';
+
 import type { EC2DBDoc } from '../../../schemas/resources/aws/ec2.schema';
 import type { Model } from 'mongoose';
 
@@ -27,8 +29,8 @@ const ec2Schema = new Schema<EC2DBDoc>(
     },
     status: {
       type: String,
-      default: 'inactive',
-      enum: ['active', 'inactive'],
+      default: RESOURCE_STATUS.ACTIVE,
+      enum: RESOURCE_STATUS_DB_ENUM,
     },
     isDeleted: {
       type: Boolean,
