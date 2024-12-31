@@ -21,5 +21,8 @@ export type EC2Instance = z.infer<typeof createEC2InstanceSchema>;
 
 export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {
   userId: Schema.Types.ObjectId;
+  resourceId: string;
+  terraformConfig: string;
+  resourceConfig: string;
   status: string;
 }

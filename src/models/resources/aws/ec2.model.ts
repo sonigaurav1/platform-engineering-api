@@ -11,6 +11,10 @@ const ec2Schema = new Schema<EC2DBDoc>(
       type: Schema.Types.ObjectId,
       required: true,
     },
+    resourceId: {
+      type: String,
+      required: true,
+    },
     instanceType: {
       type: String,
       required: true,
