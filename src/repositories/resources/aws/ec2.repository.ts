@@ -5,7 +5,7 @@ import type { DbQueryOptions, DbTransactionOptions } from '../../../interfaces/q
 import type { EC2DBDoc } from '../../../schemas/resources/aws/ec2.schema';
 import type { ObjectId } from 'mongoose';
 
-const create = async (data: Partial<EC2DBDoc>, options: DbTransactionOptions): Promise<EC2DBDoc> => {
+const create = async (data: Partial<EC2DBDoc>, options?: DbTransactionOptions): Promise<EC2DBDoc> => {
   return BaseRepository.create(EC2Model, data, options);
 };
 

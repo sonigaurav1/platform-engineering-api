@@ -20,7 +20,7 @@ const ec2Schema = new Schema<EC2DBDoc>(
       required: true,
     },
     tags: {
-      type: [String],
+      type: [],
       required: true,
     },
     numberOfInstance: {

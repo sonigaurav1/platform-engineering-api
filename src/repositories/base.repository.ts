@@ -1,7 +1,7 @@
 import type { DbQueryOptions, DbTransactionOptions } from '../interfaces/query.interface';
 import type { Model, Document, ObjectId } from 'mongoose';
 
-const create = async <T extends Document>(model: Model<T>, data: Partial<T>, option: DbTransactionOptions): Promise<T> => {
+const create = async <T extends Document>(model: Model<T>, data: Partial<T>, option?: DbTransactionOptions): Promise<T> => {
   const dbData = await model.create([data], { ...option });
   return dbData[0];
 };
