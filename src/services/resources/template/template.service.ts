@@ -1,28 +1,9 @@
 import { readFileSync } from 'fs';
-// import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 
 import Handlebars from 'handlebars';
 
-import logger from '../../../utils/logger';
-
 const getTerraformTemplateFileDirectory = () => join(__dirname, '../../../../terraform_template');
-
-// async function writeFileToDirectory(data: { filePath: string; content: string }) {
-//   const directory = dirname(data.filePath); // Extract the directory path
-
-//   try {
-//     // Ensure the directory exists (creates it if it doesn't)
-//     await mkdir(directory, { recursive: true });
-
-//     // Write the file
-//     await writeFile(data.filePath, data.content, 'utf8');
-//     logger.info('File written successfully!');
-//   } catch (error) {
-//     console.error('Error writing file:', error);
-//     logger.error(error);
-//   }
-// }
 
 const compileTemplate = (data: { content: object; filePath: string }) => {
   const fileContent = readFileSync(data.filePath, {
@@ -45,14 +26,7 @@ const generateTerraformConfigFile = async (data: { content: object; fileWritePat
     content: data.content,
   });
 
-  logger.info(fileData);
-
   return fileData;
-
-  // return writeFileToDirectory({
-  //   filePath: data.fileWritePath,
-  //   content: fileData,
-  // });
 };
 
 const generateTerraformEC2File = async (data: { content: object; fileWritePath: string }) => {
@@ -64,14 +38,7 @@ const generateTerraformEC2File = async (data: { content: object; fileWritePath: 
     content: data.content,
   });
 
-  logger.info(fileData);
-
   return fileData;
-
-  // return writeFileToDirectory({
-  //   filePath: data.fileWritePath,
-  //   content: fileData,
-  // });
 };
 
 const TemplateService = {

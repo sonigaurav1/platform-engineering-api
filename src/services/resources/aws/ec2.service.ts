@@ -1,10 +1,11 @@
-import { RESOURCE_STATUS } from '../../../constants/enum';
+import { RESOURCE_STATUS, RESOURCE_TYPE } from '../../../constants/enum';
 import { transformResourceTags } from '../../../helpers/payloadTransformer.helper';
 import { convertInstanceCountToString, getResourceFileWrittenPath } from '../../../helpers/resource.helper';
 import BaseRepository from '../../../repositories/base.repository';
 import EC2Repository from '../../../repositories/resources/aws/ec2.repository';
 import logger from '../../../utils/logger';
 import { generateResourceId } from '../../../utils/uuid';
+import ExecutionService from '../execution/execution.service';
 import TemplateService from '../template/template.service';
 
 import ResourceService from './resource.service';
@@ -21,6 +22,10 @@ const saveEC2InstanceDetails = async (ec2Data: Partial<EC2DBDoc>, options: DbQue
     logger.error(error);
     throw error;
   }
+};
+
+const updateEC2InstanceStatus = async (data: { resourceId: string; status: string; options?: DbQueryOptions }) => {
+  return EC2Repository.update({ resourceId: data.resourceId }, { status: data.status }, data.options);
 };
 
 const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
@@ -72,7 +77,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
         terraformConfig: terraformConfig,
         resourceConfig: resourceConfig,
         userId: userData.id,
-        resourceType: 'EC2',
+        resourceType: RESOURCE_TYPE.EC2,
         status: RESOURCE_STATUS.INACTIVE,
         terraformStateFileS3Key: terraformConfigFile,
         resourceExecutionPath: terraformWritePath,
@@ -81,10 +86,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       { session: session },
     );
 
-    // executeTerraformCommand({
-    //   resourceName: 'EC2 instance',
-    //   terraformWritePath: terraformWritePath,
-    // });
+    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: updateEC2InstanceStatus, options: { session: session } });
 
     await session.commitTransaction();
     session.endSession();
@@ -98,6 +100,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
 const EC2Service = {
   createEC2Instance,
+  updateEC2InstanceStatus,
 };
 
 export default EC2Service;

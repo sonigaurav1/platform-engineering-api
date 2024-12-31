@@ -7,8 +7,13 @@ const saveResourceDetails = async (resourceDetails: Partial<ResourceDBDoc>, opti
   return ResourceRepository.create(resourceDetails, options);
 };
 
+const updateResourceStatus = async (data: { resourceId: string; status: string; options?: DbTransactionOptions }) => {
+  return ResourceRepository.update({ resourceId: data.resourceId }, { status: data.status }, data.options);
+};
+
 const ResourceService = {
   saveResourceDetails,
+  updateResourceStatus,
 };
 
 export default ResourceService;
