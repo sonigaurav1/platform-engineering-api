@@ -1,7 +1,9 @@
 export const RESOURCE_STATUS = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
+  FAILED: 'failed',
+  STOPPED: 'stopped',
   DELETED: 'deleted',
+  PENDING: 'pending',
+  RUNNING: 'running',
 };
 
 export const RESOURCE_TYPE = {

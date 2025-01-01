@@ -41,7 +41,7 @@ const ec2Schema = new Schema<EC2DBDoc>(
     },
     status: {
       type: String,
-      default: RESOURCE_STATUS.ACTIVE,
+      default: RESOURCE_STATUS.PENDING,
       enum: RESOURCE_STATUS_DB_ENUM,
     },
     isDeleted: {

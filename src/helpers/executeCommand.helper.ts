@@ -22,13 +22,13 @@ export const runCommand = (command: string, workingDir: string): Promise<void> =
       if (code === 0) {
         resolve();
       } else {
-        reject(`Command failed with exit code ${code}`);
+        reject(new Error(`Command "${command}" failed with exit code ${code}`));
       }
     });
 
     // Handle process errors
     process.on('error', (error) => {
-      reject(`Error: ${error.message}`);
+      reject(new Error(`Command "${command}" execution error: ${error.message}`));
     });
   });
 };

@@ -50,10 +50,12 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       fileWritePath: terraformConfigFile,
     });
 
+    const resourceId = generateResourceId();
+
     const ec2InstanceFilePromise = TemplateService.generateTerraformEC2File({
       content: {
         PUBLIC_KEY: sshKey.publicKey,
-        KEY_PAIR_NAME: `ec2-keypair-${userData.id}`,
+        KEY_PAIR_NAME: `ec2-keypair-${resourceId}`,
         EC2_TAG_KEY: `{
            ${resourceTags}
         }`,
@@ -67,8 +69,6 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     const [terraformConfig, resourceConfig] = await Promise.all([terraformFilePromise, ec2InstanceFilePromise]);
 
-    const resourceId = generateResourceId();
-
     await saveEC2InstanceDetails(
       {
         ...ec2Data,
@@ -78,7 +78,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
           privateKey: sshKey.privateKey,
           publicKey: sshKey.publicKey,
         },
-        status: RESOURCE_STATUS.INACTIVE,
+        status: RESOURCE_STATUS.PENDING,
       },
       { session: session },
     );
@@ -89,7 +89,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
         resourceConfig: resourceConfig,
         userId: userData.id,
         resourceType: RESOURCE_TYPE.EC2,
-        status: RESOURCE_STATUS.INACTIVE,
+        status: RESOURCE_STATUS.PENDING,
         terraformStateFileS3Key: terraformConfigFile,
         resourceExecutionPath: terraformWritePath,
         resourceId: resourceId,
