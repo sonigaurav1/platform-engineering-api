@@ -50,10 +50,12 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     const ec2InstanceFilePromise = TemplateService.generateTerraformEC2File({
       content: {
-        TAG_LIST: resourceTags,
-        INSTANCE_TYPE: `"${ec2Data.instanceType}"`,
-        AMI: `"${ec2Data.amiId}"`,
-        NUMBER_OF_INSTANCE: convertInstanceCountToString(ec2Data.numberOfInstance),
+        PUBLIC_KEY: '',
+        EC2_TAG_KEY: resourceTags,
+        EC2_INSTANCE_NAME: '',
+        EC2_INSTANCE_TYPE: `${ec2Data.instanceType}`,
+        EC2_AMI: `${ec2Data.amiId}`,
+        EC2_NUMBER_OF_INSTANCE: convertInstanceCountToString(ec2Data.numberOfInstance),
       },
       fileWritePath: terraformEC2File,
     });

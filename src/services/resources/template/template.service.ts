@@ -19,7 +19,7 @@ const compileTemplate = (data: { content: object; filePath: string }) => {
 
 const generateTerraformConfigFile = async (data: { content: object; fileWritePath: string }) => {
   const workingDir = getTerraformTemplateFileDirectory();
-  const terraformFilePath = join(workingDir, 'terraform.tpl');
+  const terraformFilePath = join(workingDir, 'terraform.tf');
 
   const fileData = compileTemplate({
     filePath: terraformFilePath,
@@ -31,7 +31,7 @@ const generateTerraformConfigFile = async (data: { content: object; fileWritePat
 
 const generateTerraformEC2File = async (data: { content: object; fileWritePath: string }) => {
   const workingDir = getTerraformTemplateFileDirectory();
-  const terraformFilePath = join(workingDir, 'ec2.tpl');
+  const terraformFilePath = join(workingDir, 'ec2.tf');
 
   const fileData = compileTemplate({
     filePath: terraformFilePath,
