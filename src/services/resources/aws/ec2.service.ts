@@ -3,6 +3,7 @@ import { transformResourceTags } from '../../../helpers/payloadTransformer.helpe
 import { convertInstanceCountToString, getResourceFileWrittenPath } from '../../../helpers/resource.helper';
 import BaseRepository from '../../../repositories/base.repository';
 import EC2Repository from '../../../repositories/resources/aws/ec2.repository';
+import { generateSSHKeyPair } from '../../../utils/crypto';
 import logger from '../../../utils/logger';
 import { generateResourceId } from '../../../utils/uuid';
 import ExecutionService from '../execution/execution.service';
@@ -40,6 +41,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
     const terraformConfigFile = `${terraformWritePath}/terraform.tf`;
     const terraformEC2File = `${terraformWritePath}/ec2.tf`;
     const resourceTags = transformResourceTags(ec2Data.tags);
+    const sshKey = generateSSHKeyPair();
 
     const terraformFilePromise = TemplateService.generateTerraformConfigFile({
       content: {
@@ -50,11 +52,14 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     const ec2InstanceFilePromise = TemplateService.generateTerraformEC2File({
       content: {
-        PUBLIC_KEY: '',
-        EC2_TAG_KEY: resourceTags,
-        EC2_INSTANCE_NAME: '',
-        EC2_INSTANCE_TYPE: `${ec2Data.instanceType}`,
-        EC2_AMI: `${ec2Data.amiId}`,
+        PUBLIC_KEY: sshKey.publicKey,
+        KEY_PAIR_NAME: `ec2-keypair-${userData.id}`,
+        EC2_TAG_KEY: `{
+           ${resourceTags}
+        }`,
+        EC2_INSTANCE_NAME: ec2Data.instanceName,
+        EC2_INSTANCE_TYPE: ec2Data.instanceType,
+        EC2_AMI: ec2Data.amiId,
         EC2_NUMBER_OF_INSTANCE: convertInstanceCountToString(ec2Data.numberOfInstance),
       },
       fileWritePath: terraformEC2File,
@@ -69,6 +74,10 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
         ...ec2Data,
         resourceId: resourceId,
         userId: userData.id,
+        sshKey: {
+          privateKey: sshKey.privateKey,
+          publicKey: sshKey.publicKey,
+        },
         status: RESOURCE_STATUS.INACTIVE,
       },
       { session: session },

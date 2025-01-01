@@ -11,6 +11,7 @@ enum InstanceType {
 }
 
 export const createEC2InstanceSchema = z.object({
+  instanceName: z.string({ required_error: 'Instance name is required' }),
   instanceType: z.nativeEnum(InstanceType, { required_error: 'Instance type is required' }),
   amiId: z.string({ required_error: 'AMI ID is required' }),
   tags: z.array(z.record(z.string()), { required_error: 'Tags are required' }),
@@ -26,5 +27,9 @@ export type EC2Instance = z.infer<typeof createEC2InstanceSchema>;
 export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {
   userId: Schema.Types.ObjectId;
   resourceId: string;
+  sshKey: {
+    privateKey: string;
+    publicKey: string;
+  };
   status: string;
 }

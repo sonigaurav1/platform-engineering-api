@@ -11,6 +11,14 @@ const ec2Schema = new Schema<EC2DBDoc>(
       type: Schema.Types.ObjectId,
       required: true,
     },
+    instanceName: {
+      type: String,
+      required: true,
+    },
+    sshKey: {
+      type: { privateKey: String, publicKey: String },
+      required: true,
+    },
     resourceId: {
       type: String,
       required: true,
