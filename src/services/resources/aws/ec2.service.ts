@@ -1,5 +1,9 @@
 import { RESOURCE_STATUS, RESOURCE_TYPE } from '../../../constants/enum';
-import { transformResourceTags } from '../../../helpers/payloadTransformer.helper';
+import {
+  transformEC2InstanceListToTerraformCompatible,
+  transformEC2InstanceNumberToList,
+  transformResourceTags,
+} from '../../../helpers/payloadTransformer.helper';
 import { convertInstanceCountToString, getResourceFileWrittenPath } from '../../../helpers/resource.helper';
 import BaseRepository from '../../../repositories/base.repository';
 import EC2Repository from '../../../repositories/resources/aws/ec2.repository';
@@ -52,6 +56,18 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     const resourceId = generateResourceId();
 
+    const ec2InstanceList = transformEC2InstanceNumberToList({
+      instanceData: {
+        instance_type: ec2Data.instanceType,
+        ami: ec2Data.amiId,
+      },
+      count: ec2Data.numberOfInstance,
+    });
+
+    const ec2TerraformCompatible = transformEC2InstanceListToTerraformCompatible(ec2InstanceList);
+
+    // console.log(ec2InstanceList, ec2TerraformCompatible);
+
     const ec2InstanceFilePromise = TemplateService.generateTerraformEC2File({
       content: {
         PUBLIC_KEY: sshKey.publicKey,
@@ -63,11 +79,16 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
         EC2_INSTANCE_TYPE: ec2Data.instanceType,
         EC2_AMI: ec2Data.amiId,
         EC2_NUMBER_OF_INSTANCE: convertInstanceCountToString(ec2Data.numberOfInstance),
+        EC2_INSTANCE_LIST: ec2TerraformCompatible,
       },
       fileWritePath: terraformEC2File,
     });
 
     const [terraformConfig, resourceConfig] = await Promise.all([terraformFilePromise, ec2InstanceFilePromise]);
+
+    // console.log(resourceConfig);
+
+    // return;
 
     await saveEC2InstanceDetails(
       {
