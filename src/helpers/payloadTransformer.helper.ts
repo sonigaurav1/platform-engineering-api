@@ -3,8 +3,12 @@ type InstanceConfig = {
   instance_type: string;
 };
 
-type Instances = {
-  [key: string]: InstanceConfig;
+const INSTANCE_COUNT_TO_STRING = {
+  1: 'one',
+  2: 'two',
+  3: 'three',
+  4: 'four',
+  5: 'five',
 };
 
 export const transformResourceTags = (tags: { [key: string]: string }[]) => {
@@ -20,23 +24,30 @@ export const transformResourceTags = (tags: { [key: string]: string }[]) => {
   return resourceTags;
 };
 
-export const transformEC2InstanceNumberToList = (data: { instanceData: InstanceConfig; count: number }): Instances => {
-  const instances: Instances = {};
+export const transformEC2InstanceNumberToTerraformCompatible = (data: {
+  instanceData: InstanceConfig;
+  count: number;
+}): { instanceList: string; resourceList: string[] } => {
   const { instanceData, count } = data;
 
+  const instanceList = [];
+  const resourceList = [];
+
   for (let i = 1; i <= count; i++) {
-    instances[`instance${i}`] = {
-      ami: instanceData.ami,
-      instance_type: instanceData.instance_type,
-    };
+    const resourceName = `instance_${INSTANCE_COUNT_TO_STRING[i as keyof typeof INSTANCE_COUNT_TO_STRING]}`.trim();
+    const data = `
+      ${resourceName} = {
+        ami = "${instanceData.ami}"
+        instance_type = "${instanceData.instance_type}"
+      }
+    `;
+
+    instanceList.push(data);
+    resourceList.push(`module.ec2_instance["${resourceName}"]`);
   }
 
-  return instances;
-};
-
-export const transformEC2InstanceListToTerraformCompatible = (instances: unknown) => {
-  const jsonString = JSON.stringify(instances, null, 2);
-  const replacedColons = jsonString.replace(/:/g, '='); // Replace all colons with equals signs
-  const replacedCommas = replacedColons.replace(/,/g, '\n'); // Replace all commas with new lines
-  return replacedCommas;
+  return {
+    instanceList: instanceList.join('\n'),
+    resourceList: resourceList,
+  };
 };

@@ -1,14 +1,12 @@
 import { RESOURCE_STATUS, RESOURCE_TYPE } from '../../../constants/enum';
-import {
-  transformEC2InstanceListToTerraformCompatible,
-  transformEC2InstanceNumberToList,
-  transformResourceTags,
-} from '../../../helpers/payloadTransformer.helper';
+import { transformEC2InstanceNumberToTerraformCompatible, transformResourceTags } from '../../../helpers/payloadTransformer.helper';
 import { convertInstanceCountToString, getResourceFileWrittenPath } from '../../../helpers/resource.helper';
 import BaseRepository from '../../../repositories/base.repository';
 import EC2Repository from '../../../repositories/resources/aws/ec2.repository';
+import ResourceRepository from '../../../repositories/resources/resource.repository';
 import { generateSSHKeyPair } from '../../../utils/crypto';
 import logger from '../../../utils/logger';
+import { getValue } from '../../../utils/object';
 import { generateResourceId } from '../../../utils/uuid';
 import ExecutionService from '../execution/execution.service';
 import TemplateService from '../template/template.service';
@@ -19,15 +17,6 @@ import type { DbQueryOptions } from '../../../interfaces/query.interface';
 import type { EC2DBDoc, EC2Instance } from '../../../schemas/resources/aws/ec2.schema';
 import type { UserDbDoc } from '../../../schemas/user/user.schema';
 import type { ClientSession } from 'mongoose';
-
-const saveEC2InstanceDetails = async (ec2Data: Partial<EC2DBDoc>, options: DbQueryOptions) => {
-  try {
-    await EC2Repository.create(ec2Data, { session: options.session });
-  } catch (error) {
-    logger.error(error);
-    throw error;
-  }
-};
 
 const updateEC2InstanceStatus = async (data: { resourceId: string; status: string; options?: DbQueryOptions }) => {
   return EC2Repository.update({ resourceId: data.resourceId }, { status: data.status }, data.options);
@@ -56,7 +45,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     const resourceId = generateResourceId();
 
-    const ec2InstanceList = transformEC2InstanceNumberToList({
+    const { instanceList, resourceList } = transformEC2InstanceNumberToTerraformCompatible({
       instanceData: {
         instance_type: ec2Data.instanceType,
         ami: ec2Data.amiId,
@@ -64,9 +53,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       count: ec2Data.numberOfInstance,
     });
 
-    const ec2TerraformCompatible = transformEC2InstanceListToTerraformCompatible(ec2InstanceList);
-
-    // console.log(ec2InstanceList, ec2TerraformCompatible);
+    // return;
 
     const ec2InstanceFilePromise = TemplateService.generateTerraformEC2File({
       content: {
@@ -79,7 +66,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
         EC2_INSTANCE_TYPE: ec2Data.instanceType,
         EC2_AMI: ec2Data.amiId,
         EC2_NUMBER_OF_INSTANCE: convertInstanceCountToString(ec2Data.numberOfInstance),
-        EC2_INSTANCE_LIST: ec2TerraformCompatible,
+        EC2_INSTANCE_LIST: instanceList,
       },
       fileWritePath: terraformEC2File,
     });
@@ -90,8 +77,8 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     // return;
 
-    await saveEC2InstanceDetails(
-      {
+    const ec2DBInsertData = resourceList.map((resource) => {
+      const data = {
         ...ec2Data,
         resourceId: resourceId,
         userId: userData.id,
@@ -100,9 +87,13 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
           publicKey: sshKey.publicKey,
         },
         status: RESOURCE_STATUS.PENDING,
-      },
-      { session: session },
-    );
+        terraformResourceName: resource.trim(),
+      };
+
+      return data as EC2DBDoc;
+    });
+
+    await EC2Repository.bulkSave(ec2DBInsertData, { session: session });
 
     await ResourceService.saveResourceDetails(
       {
@@ -118,10 +109,11 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       { session: session },
     );
 
-    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: updateEC2InstanceStatus, options: { session: session } });
-
     await session.commitTransaction();
     session.endSession();
+
+    return;
+    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: updateEC2InstanceStatus, options: { session: session } });
   } catch (error) {
     logger.error(error);
     await session.abortTransaction();
@@ -146,10 +138,38 @@ const deleteEC2Instance = async (resourceId: string) => {
   }
 };
 
+const deleteSpecificEC2Instance = async (resourceId: string) => {
+  try {
+    // const callBack = async (data: { resourceId: string; status: string }) => {
+    //   // EC2Repository.softDelete({ resourceId: data.resourceId, userId: userData.id });
+    //   updateEC2InstanceStatus({ resourceId: data.resourceId, status: data.status });
+    // };
+
+    const response = await ResourceRepository.findOne({ resourceId: resourceId });
+    if (!response) {
+      return null;
+    }
+
+    const metaData = JSON.parse(response.metaData);
+    const ec2Data = getValue(metaData, 'values.root_module.child_modules', []) as unknown as Array<unknown>;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ec2InstanceIds = ec2Data.flatMap((item: any) => {
+      return item.address;
+    });
+
+    return ec2InstanceIds;
+  } catch (error) {
+    logger.error(error);
+    throw error;
+  }
+};
+
 const EC2Service = {
   createEC2Instance,
   updateEC2InstanceStatus,
   deleteEC2Instance,
+  deleteSpecificEC2Instance,
 };
 
 export default EC2Service;

@@ -20,6 +20,8 @@ export const createEC2InstanceSchema = z.object({
 
 export const deleteEC2InstanceSchema = z.object({
   resourceId: z.string({ required_error: 'Resource ID is required' }).min(20, 'Resource ID should be of 20 characters'),
+  // instanceId: z.string({ required_error: 'Instance ID is required' }),
+  // terraformResourceId: z.string({ required_error: 'Terraform resource ID is required' }),
 });
 
 export type EC2Instance = z.infer<typeof createEC2InstanceSchema>;
@@ -32,5 +34,6 @@ export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {
     publicKey: string;
   };
   status: string;
-  instanceIds: string[];
+  instanceId: string;
+  terraformResourceName: string;
 }

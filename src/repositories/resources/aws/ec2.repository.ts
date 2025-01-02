@@ -9,6 +9,11 @@ const create = async (data: Partial<EC2DBDoc>, options?: DbTransactionOptions): 
   return BaseRepository.create(EC2Model, data, options);
 };
 
+const bulkSave = async (data: Partial<EC2DBDoc[]>, options?: DbTransactionOptions): Promise<EC2DBDoc[]> => {
+  const filteredData = data.filter((item): item is EC2DBDoc => item !== undefined);
+  return BaseRepository.bulkInsert(EC2Model, filteredData, options);
+};
+
 const update = async (condition: object, data: Partial<EC2DBDoc>, options: DbTransactionOptions = {}): Promise<EC2DBDoc | null> => {
   return BaseRepository.update(EC2Model, condition, data, options);
 };
@@ -41,6 +46,7 @@ const EC2Repository = {
   findAll,
   create,
   update,
+  bulkSave,
 };
 
 export default EC2Repository;

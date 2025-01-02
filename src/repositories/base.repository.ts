@@ -8,6 +8,15 @@ const create = async <T extends Document>(model: Model<T>, data: Partial<T>, opt
   return dbData[0];
 };
 
+const bulkInsert = async <T extends Document>(model: Model<T>, data: Partial<T>[], options?: DbTransactionOptions): Promise<T[]> => {
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('Data must be a non-empty array');
+  }
+
+  const dbData = (await model.insertMany(data, { ...options })) as unknown as T[];
+  return dbData;
+};
+
 const update = async <T extends Document>(
   model: Model<T>,
   condition: object,
@@ -80,6 +89,7 @@ const BaseRepository = {
   findById,
   findAll,
   getDbSession,
+  bulkInsert,
 };
 
 export default BaseRepository;

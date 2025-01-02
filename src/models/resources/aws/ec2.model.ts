@@ -35,12 +35,11 @@ const ec2Schema = new Schema<EC2DBDoc>(
       type: [],
       required: true,
     },
-    numberOfInstance: {
-      type: Number,
-      required: true,
+    instanceId: {
+      type: String,
     },
-    instanceIds: {
-      type: [String],
+    terraformResourceName: {
+      type: String,
     },
     status: {
       type: String,
