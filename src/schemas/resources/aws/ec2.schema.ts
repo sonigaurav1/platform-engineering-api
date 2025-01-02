@@ -32,4 +32,5 @@ export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {
     publicKey: string;
   };
   status: string;
+  instanceIds: string[];
 }

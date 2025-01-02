@@ -32,11 +32,12 @@ const executeResourceCreationTerraformCommand = async (data: {
 
     logger.info(`${resourceName} with resourcedId:${resourceId} created successfully!`);
 
-    await runCommand('terraform show', terraformWritePath);
+    const { stdoutData } = await runCommand('terraform show -json | jq', terraformWritePath);
     logger.info('Resource details displayed successfully!');
 
     // Update the status of the resource to ACTIVE
     ResourceService.updateResourceStatus({ resourceId: resourceId, status: RESOURCE_STATUS.RUNNING });
+    ResourceService.updateResourceMetaData({ resourceId: resourceId, metaData: stdoutData });
     data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.RUNNING });
   } catch (error) {
     // Update the status of the resource to FAILED

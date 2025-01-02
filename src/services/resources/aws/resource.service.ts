@@ -11,9 +11,14 @@ const updateResourceStatus = async (data: { resourceId: string; status: string; 
   return ResourceRepository.update({ resourceId: data.resourceId }, { status: data.status }, data.options);
 };
 
+const updateResourceMetaData = async (data: { resourceId: string; metaData: string; options?: DbTransactionOptions }) => {
+  return ResourceRepository.update({ resourceId: data.resourceId }, { metaData: data.metaData }, data.options);
+};
+
 const ResourceService = {
   saveResourceDetails,
   updateResourceStatus,
+  updateResourceMetaData,
 };
 
 export default ResourceService;

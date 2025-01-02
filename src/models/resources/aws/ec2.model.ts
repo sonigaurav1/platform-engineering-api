@@ -39,6 +39,9 @@ const ec2Schema = new Schema<EC2DBDoc>(
       type: Number,
       required: true,
     },
+    instanceIds: {
+      type: [String],
+    },
     status: {
       type: String,
       default: RESOURCE_STATUS.PENDING,
