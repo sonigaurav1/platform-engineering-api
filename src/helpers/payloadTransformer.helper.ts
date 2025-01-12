@@ -36,7 +36,7 @@ export const transformEC2InstanceNumberToTerraformCompatible = (data: {
   for (let i = 1; i <= count; i++) {
     const resourceName = `instance_${INSTANCE_COUNT_TO_STRING[i as keyof typeof INSTANCE_COUNT_TO_STRING]}`.trim();
     const data = `
-      ${resourceName} = {
+      "${resourceName}" = {
         ami = "${instanceData.ami}"
         instance_type = "${instanceData.instance_type}"
       }
@@ -47,7 +47,7 @@ export const transformEC2InstanceNumberToTerraformCompatible = (data: {
   }
 
   return {
-    instanceList: instanceList.join('\n'),
+    instanceList: `{${instanceList.join('\n')}}`,
     resourceList: resourceList,
   };
 };

@@ -109,11 +109,12 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       { session: session },
     );
 
+    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: updateEC2InstanceStatus, options: { session: session } });
+
     await session.commitTransaction();
     session.endSession();
 
-    return;
-    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: updateEC2InstanceStatus, options: { session: session } });
+    // return;
   } catch (error) {
     logger.error(error);
     await session.abortTransaction();
