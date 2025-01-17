@@ -18,3 +18,29 @@ export const convertInstanceCountToString = (count: number): string => {
 
   return listOfNumber.map((num) => `"${num}"`).join(',');
 };
+
+export const removeSpecificEC2FromTerraformResourceConfig = (data: { resourceConfig: string; resourceName: string }) => {
+  const { resourceConfig, resourceName } = data;
+
+  // Extract the instance key from the resource name
+  const match = resourceName.match(/^module\.ec2_instance\["([\w-]+)"\]$/);
+  if (!match) {
+    throw new Error(`Invalid resource name format: ${resourceName}. Expected format: module.ec2_instance["instance_name"].`);
+  }
+
+  const instanceKey = match[1];
+
+  // Regex to find and remove the instance from the variable "instances" block
+  const instanceRegex = new RegExp(`"${instanceKey}"\\s*=\\s*\\{[\\s\\S]*?\\}`, 'g');
+
+  // Check if the instance exists in the configuration
+  if (!instanceRegex.test(resourceConfig)) {
+    throw new Error(`Instance "${instanceKey}" not found in the configuration.`);
+  }
+
+  // Replace the instance definition with an empty string to remove it
+  const updatedConfig = resourceConfig.replace(instanceRegex, '');
+
+  // Return the updated configuration
+  return updatedConfig.trim();
+};

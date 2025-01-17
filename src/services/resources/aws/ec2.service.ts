@@ -1,10 +1,16 @@
 import { RESOURCE_STATUS, RESOURCE_TYPE } from '../../../constants/enum';
+import { DynamicMessages } from '../../../constants/error';
 import { transformEC2InstanceNumberToTerraformCompatible, transformResourceTags } from '../../../helpers/payloadTransformer.helper';
-import { convertInstanceCountToString, getResourceFileWrittenPath } from '../../../helpers/resource.helper';
+import {
+  convertInstanceCountToString,
+  getResourceFileWrittenPath,
+  removeSpecificEC2FromTerraformResourceConfig,
+} from '../../../helpers/resource.helper';
 import BaseRepository from '../../../repositories/base.repository';
 import EC2Repository from '../../../repositories/resources/aws/ec2.repository';
 import ResourceRepository from '../../../repositories/resources/resource.repository';
 import { generateSSHKeyPair } from '../../../utils/crypto';
+import createError from '../../../utils/http.error';
 import logger from '../../../utils/logger';
 import { getValue } from '../../../utils/object';
 import { generateResourceId } from '../../../utils/uuid';
@@ -19,7 +25,11 @@ import type { UserDbDoc } from '../../../schemas/user/user.schema';
 import type { ClientSession } from 'mongoose';
 
 const updateEC2InstanceStatus = async (data: { resourceId: string; status: string; options?: DbQueryOptions }) => {
-  return EC2Repository.update({ resourceId: data.resourceId }, { status: data.status }, data.options);
+  return EC2Repository.updateMany({ resourceId: data.resourceId }, { status: data.status }, data.options);
+};
+
+const markEC2InstanceAsDeleted = async (data: { resourceId: string; status: string; options?: DbQueryOptions }) => {
+  return EC2Repository.updateMany({ resourceId: data.resourceId }, { status: data.status, isDeleted: true }, data.options);
 };
 
 const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
@@ -126,8 +136,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 const deleteEC2Instance = async (resourceId: string) => {
   try {
     const callBack = async (data: { resourceId: string; status: string }) => {
-      // EC2Repository.softDelete({ resourceId: data.resourceId, userId: userData.id });
-      updateEC2InstanceStatus({ resourceId: data.resourceId, status: data.status });
+      markEC2InstanceAsDeleted({ resourceId: data.resourceId, status: RESOURCE_STATUS.DELETED });
     };
 
     const response = await ExecutionService.destroyResourceInCloud({ resourceId: resourceId, callBack: callBack });
@@ -139,27 +148,47 @@ const deleteEC2Instance = async (resourceId: string) => {
   }
 };
 
-const deleteSpecificEC2Instance = async (resourceId: string) => {
+const deleteSpecificEC2Instance = async (ec2Id: string) => {
   try {
-    // const callBack = async (data: { resourceId: string; status: string }) => {
-    //   // EC2Repository.softDelete({ resourceId: data.resourceId, userId: userData.id });
-    //   updateEC2InstanceStatus({ resourceId: data.resourceId, status: data.status });
-    // };
+    const ec2Instance = await EC2Repository.findById(ec2Id);
 
-    const response = await ResourceRepository.findOne({ resourceId: resourceId });
-    if (!response) {
-      return null;
+    if (!ec2Instance) {
+      throw createError(404, DynamicMessages.notFoundMessage(`EC2 instance with id: ${ec2Id}`));
     }
 
-    const metaData = JSON.parse(response.metaData);
+    const resource = await ResourceRepository.findOne({ resourceId: ec2Instance.resourceId });
+    if (!resource) {
+      throw createError(404, DynamicMessages.notFoundMessage(`Resource with resourceId: ${ec2Instance.resourceId}`));
+    }
+
+    const metaData = JSON.parse(resource.metaData);
     const ec2Data = getValue(metaData, 'values.root_module.child_modules', []) as unknown as Array<unknown>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ec2InstanceIds = ec2Data.flatMap((item: any) => {
+    const terraformEC2InstanceResourceIds = ec2Data.flatMap((item: any) => {
       return item.address;
     });
 
-    return ec2InstanceIds;
+    const terraformResourceNameToDelete = terraformEC2InstanceResourceIds.find((tResource) => tResource === ec2Instance.terraformResourceName);
+
+    const newResourceConfig = removeSpecificEC2FromTerraformResourceConfig({
+      resourceConfig: resource.resourceConfig,
+      resourceName: terraformResourceNameToDelete,
+    });
+
+    const callBack = async (data: { resourceId: string; status: string }) => {
+      EC2Repository.update({ _id: ec2Instance._id }, { status: RESOURCE_STATUS.DELETED, isDeleted: true });
+      ResourceRepository.update({ resourceId: data.resourceId }, { resourceConfig: newResourceConfig, status: data.status });
+    };
+
+    // execute the resource deletion command
+    ExecutionService.destroySpecificResourceInCloud({
+      resourceId: ec2Instance.resourceId,
+      newResourceConfig: newResourceConfig,
+      callBack: callBack,
+    });
+
+    return terraformEC2InstanceResourceIds;
   } catch (error) {
     logger.error(error);
     throw error;

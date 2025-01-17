@@ -1,4 +1,4 @@
-import { RESOURCE_STATUS } from '../../../constants/enum';
+import { RESOURCE_STATUS, RESOURCE_TYPE } from '../../../constants/enum';
 import { runCommand } from '../../../helpers/executeCommand.helper';
 import { cleanUpDisk, writeFileToDirectory } from '../../../helpers/file.helper';
 import ResourceRepository from '../../../repositories/resources/resource.repository';
@@ -36,12 +36,12 @@ const executeResourceCreationTerraformCommand = async (data: {
     logger.info('Resource details displayed successfully!');
 
     // Update the status of the resource to ACTIVE
-    ResourceService.updateResourceStatus({ resourceId: resourceId, status: RESOURCE_STATUS.RUNNING });
+    ResourceService.updateResourceStatus({ resourceId: resourceId, updatedData: { status: RESOURCE_STATUS.RUNNING } });
     ResourceService.updateResourceMetaData({ resourceId: resourceId, metaData: stdoutData });
     data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.RUNNING });
   } catch (error) {
     // Update the status of the resource to FAILED
-    ResourceService.updateResourceStatus({ resourceId: resourceId, status: RESOURCE_STATUS.FAILED });
+    ResourceService.updateResourceStatus({ resourceId: resourceId, updatedData: { status: RESOURCE_STATUS.FAILED } });
     data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.FAILED });
     logger.error(`Error while executing terraform command: ${error}`);
   } finally {
@@ -71,12 +71,41 @@ const executeResourceDeletionTerraformCommand = async (data: {
     logger.info(`${resourceName} with resourceId:${resourceId} deleted successfully!`);
 
     // Update the status of the resource to DELETED
-    ResourceService.updateResourceStatus({ resourceId: resourceId, status: RESOURCE_STATUS.DELETED });
+    ResourceService.updateResourceStatus({ resourceId: resourceId, updatedData: { status: RESOURCE_STATUS.DELETED, isDeleted: true } });
     data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.DELETED });
   } catch (error) {
     logger.error(`Error while executing terraform command: ${error}`);
   } finally {
     await cleanUpDisk(data.terraformWritePath);
+    logger.info(`Resource deletion file cleaned up successfully! at path: ${terraformWritePath}`);
+  }
+};
+
+const executeSpecificResourceDeletionTerraformCommand = async (data: {
+  terraformResourceId: string;
+  terraformWritePath: string;
+  resourceName: string;
+  resourceId: string;
+  callBack: (arg: { resourceId: string; status: string }) => void;
+}) => {
+  const { terraformWritePath, resourceName, resourceId, terraformResourceId } = data;
+  try {
+    logger.info(`Processing terraform command for ${terraformResourceId} with resourceId: ${resourceId} ${resourceName}`);
+
+    logger.info(`Initializing terraform in ${terraformWritePath}`);
+
+    await runCommand('terraform init', terraformWritePath);
+    logger.info('Terraform initialized successfully!');
+
+    await runCommand(`terraform destroy -target='${terraformResourceId}' -auto-approve`, terraformWritePath);
+    logger.info(`Terraform destroy for resourceId: ${terraformResourceId} completed successfully!`);
+
+    // Update the status of the resource to DELETED
+    data.callBack({ resourceId: terraformResourceId, status: RESOURCE_STATUS.DELETED });
+  } catch (error) {
+    logger.error(`Error while executing terraform command: ${error}`);
+  } finally {
+    // await cleanUpDisk(data.terraformWritePath);
     logger.info(`Resource deletion file cleaned up successfully! at path: ${terraformWritePath}`);
   }
 };
@@ -154,6 +183,35 @@ const writeTerraformResourceDestroyConfigFileToDiskAndExecute = async (data: {
   }
 };
 
+const writeTerraformSpecificResourceDestroyConfigFileToDiskAndExecute = async (data: {
+  terraformWritePath: string;
+  terraformConfig: string;
+  resourceConfig: string;
+  resourceType: string;
+  resourceId: string;
+  terraformResourceId: string;
+  callBack: (arg: { resourceId: string; status: string }) => void;
+}) => {
+  try {
+    await writeTerraformConfigFileToDisk({
+      terraformWritePath: data.terraformWritePath,
+      terraformConfig: data.terraformConfig,
+      resourceConfig: data.resourceConfig,
+      resourceType: data.resourceType,
+    });
+
+    executeSpecificResourceDeletionTerraformCommand({
+      terraformResourceId: data.terraformResourceId,
+      terraformWritePath: data.terraformWritePath,
+      resourceName: data.resourceType,
+      resourceId: data.resourceId,
+      callBack: data.callBack,
+    });
+  } catch (error) {
+    logger.error(`Error while executing terraform destroy command: ${error}`);
+  }
+};
+
 const createResourceInCloud = async (data: {
   resourceId: string;
   callBack: (arg: { resourceId: string; status: string }) => void;
@@ -206,9 +264,69 @@ const destroyResourceInCloud = async (data: {
   }
 };
 
+const destroySpecificResourceInCloud = async (data: {
+  newResourceConfig: string;
+  resourceId: string;
+  callBack: (arg: { resourceId: string; status: string }) => void;
+  options?: DbTransactionOptions;
+}) => {
+  try {
+    const { callBack, resourceId, newResourceConfig } = data;
+
+    const resourceDetails = await ResourceRepository.findOne({ resourceId: resourceId });
+    if (!resourceDetails) {
+      logger.info(`Resource with resourceId: ${resourceId} not found in database.`);
+      return;
+    }
+
+    writeTerraformResourceCreateConfigFileToDiskAndExecute({
+      terraformWritePath: resourceDetails.resourceExecutionPath,
+      terraformConfig: resourceDetails.terraformConfig,
+      resourceConfig: newResourceConfig,
+      resourceType: resourceDetails.resourceType,
+      resourceId: resourceDetails.resourceId,
+      callBack: callBack,
+    });
+  } catch (error) {
+    logger.error(`Error at destroySpecificResourceInCloud(): ${error}`);
+  }
+};
+
+const destroySpecificResourceInCloudWithoutUpdatingTerraformFile = async (data: {
+  terraformResourceId: string;
+  newResourceConfig: string;
+  resourceId: string;
+  callBack: (arg: { resourceId: string; status: string }) => void;
+  options?: DbTransactionOptions;
+}) => {
+  try {
+    const { callBack, terraformResourceId, resourceId, newResourceConfig } = data;
+
+    const resourceDetails = await ResourceRepository.findOne({ resourceId: resourceId });
+    if (!resourceDetails) {
+      logger.info(`Resource with resourceId: ${resourceId} not found in database.`);
+      return;
+    }
+
+    await writeTerraformSpecificResourceDestroyConfigFileToDiskAndExecute({
+      terraformResourceId: terraformResourceId,
+      resourceType: RESOURCE_TYPE.EC2,
+      terraformConfig: resourceDetails.terraformConfig,
+      resourceConfig: newResourceConfig,
+      terraformWritePath: resourceDetails.resourceExecutionPath,
+      resourceId: resourceDetails.resourceId,
+      callBack: callBack,
+    });
+  } catch (error) {
+    logger.error(`Error at destroySpecificResourceInCloud(): ${error}`);
+  }
+};
+
 const ExecutionService = {
   createResourceInCloud,
   destroyResourceInCloud,
+  destroySpecificResourceInCloud,
+  destroySpecificResourceInCloudWithoutUpdatingTerraformFile,
 };
 
 export default ExecutionService;

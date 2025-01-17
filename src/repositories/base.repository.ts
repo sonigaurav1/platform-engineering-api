@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 import type { DbQueryOptions, DbTransactionOptions } from '../interfaces/query.interface';
-import type { Model, Document, ObjectId } from 'mongoose';
+import type { Model, Document, ObjectId, UpdateWriteOpResult } from 'mongoose';
 
 const create = async <T extends Document>(model: Model<T>, data: Partial<T>, option?: DbTransactionOptions): Promise<T> => {
   const dbData = await model.create([data], { ...option });
@@ -24,6 +24,15 @@ const update = async <T extends Document>(
   options: DbTransactionOptions = {},
 ): Promise<T | null> => {
   return model.findOneAndUpdate(condition, data, { new: true, ...options });
+};
+
+const updateMany = async <T extends Document>(
+  model: Model<T>,
+  condition: object,
+  data: Partial<T>,
+  options: DbTransactionOptions = {},
+): Promise<UpdateWriteOpResult> => {
+  return model.updateMany(condition, data, { new: true, ...options });
 };
 
 const destroy = async <T extends Document>(model: Model<T>, condition: object = {}, options: DbTransactionOptions = {}): Promise<T | null> => {
@@ -90,6 +99,7 @@ const BaseRepository = {
   findAll,
   getDbSession,
   bulkInsert,
+  updateMany,
 };
 
 export default BaseRepository;

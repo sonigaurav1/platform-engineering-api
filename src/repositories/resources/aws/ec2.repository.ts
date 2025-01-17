@@ -18,6 +18,10 @@ const update = async (condition: object, data: Partial<EC2DBDoc>, options: DbTra
   return BaseRepository.update(EC2Model, condition, data, options);
 };
 
+const updateMany = async (condition: object, data: Partial<EC2DBDoc>, options: DbTransactionOptions = {}): Promise<void> => {
+  await BaseRepository.updateMany(EC2Model, condition, data, options);
+};
+
 const destroy = async (condition: object = {}, options: DbTransactionOptions = {}): Promise<EC2DBDoc | null> => {
   return BaseRepository.destroy(EC2Model, condition, options);
 };
@@ -47,6 +51,7 @@ const EC2Repository = {
   create,
   update,
   bulkSave,
+  updateMany,
 };
 
 export default EC2Repository;

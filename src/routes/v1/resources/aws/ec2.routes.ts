@@ -7,7 +7,7 @@ import { createEC2InstanceSchema, deleteEC2InstanceSchema } from '../../../../sc
 const ec2Router = express.Router();
 
 ec2Router.post('/create-instance', validateRequestBody(createEC2InstanceSchema), EC2Controller.createEC2Instance);
-ec2Router.delete('/delete-specific-instance/:resourceId', validateRequestParams(deleteEC2InstanceSchema), EC2Controller.deleteSpecificEC2Instance);
-ec2Router.delete('/delete-instance/:resourceId', validateRequestParams(deleteEC2InstanceSchema), EC2Controller.deleteEC2Instance);
+ec2Router.delete('/delete-specific-instance/:instanceId', validateRequestParams(deleteEC2InstanceSchema), EC2Controller.deleteSpecificEC2Instance);
+ec2Router.delete('/delete-resource/:resourceId', validateRequestParams(deleteEC2InstanceSchema), EC2Controller.deleteEC2InstanceWithSameResourceId);
 
 export default ec2Router;
