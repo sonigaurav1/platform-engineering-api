@@ -3,15 +3,16 @@ import { runCommand } from '../../../helpers/executeCommand.helper';
 import { cleanUpDisk, writeFileToDirectory } from '../../../helpers/file.helper';
 import ResourceRepository from '../../../repositories/resources/resource.repository';
 import logger from '../../../utils/logger';
-import ResourceService from '../aws/resource.service';
 
 import type { DbQueryOptions, DbTransactionOptions } from '../../../interfaces/query.interface';
+
+type CallBackType = (arg: { resourceId: string; resourceData: object }) => void;
 
 const executeResourceCreationTerraformCommand = async (data: {
   terraformWritePath: string;
   resourceName: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
 }) => {
   const { terraformWritePath, resourceName, resourceId } = data;
   try {
@@ -35,14 +36,11 @@ const executeResourceCreationTerraformCommand = async (data: {
     const { stdoutData } = await runCommand('terraform show -json | jq', terraformWritePath);
     logger.info('Resource details displayed successfully!');
 
-    // Update the status of the resource to ACTIVE
-    ResourceService.updateResourceStatus({ resourceId: resourceId, updatedData: { status: RESOURCE_STATUS.RUNNING } });
-    ResourceService.updateResourceMetaData({ resourceId: resourceId, metaData: stdoutData });
-    data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.RUNNING });
+    // call the callback function to update the resource status
+    data.callBack({ resourceId: resourceId, resourceData: { status: RESOURCE_STATUS.RUNNING, metaData: stdoutData } });
   } catch (error) {
     // Update the status of the resource to FAILED
-    ResourceService.updateResourceStatus({ resourceId: resourceId, updatedData: { status: RESOURCE_STATUS.FAILED } });
-    data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.FAILED });
+    data.callBack({ resourceId: resourceId, resourceData: { status: RESOURCE_STATUS.FAILED } });
     logger.error(`Error while executing terraform command: ${error}`);
   } finally {
     await cleanUpDisk(terraformWritePath);
@@ -54,7 +52,7 @@ const executeResourceDeletionTerraformCommand = async (data: {
   terraformWritePath: string;
   resourceName: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
 }) => {
   const { terraformWritePath, resourceName, resourceId } = data;
   try {
@@ -70,9 +68,7 @@ const executeResourceDeletionTerraformCommand = async (data: {
 
     logger.info(`${resourceName} with resourceId:${resourceId} deleted successfully!`);
 
-    // Update the status of the resource to DELETED
-    ResourceService.updateResourceStatus({ resourceId: resourceId, updatedData: { status: RESOURCE_STATUS.DELETED, isDeleted: true } });
-    data.callBack({ resourceId: resourceId, status: RESOURCE_STATUS.DELETED });
+    data.callBack({ resourceId: resourceId, resourceData: { status: RESOURCE_STATUS.DELETED, isDeleted: true } });
   } catch (error) {
     logger.error(`Error while executing terraform command: ${error}`);
   } finally {
@@ -86,7 +82,7 @@ const executeSpecificResourceDeletionTerraformCommand = async (data: {
   terraformWritePath: string;
   resourceName: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
 }) => {
   const { terraformWritePath, resourceName, resourceId, terraformResourceId } = data;
   try {
@@ -101,7 +97,7 @@ const executeSpecificResourceDeletionTerraformCommand = async (data: {
     logger.info(`Terraform destroy for resourceId: ${terraformResourceId} completed successfully!`);
 
     // Update the status of the resource to DELETED
-    data.callBack({ resourceId: terraformResourceId, status: RESOURCE_STATUS.DELETED });
+    data.callBack({ resourceId: terraformResourceId, resourceData: { status: RESOURCE_STATUS.DELETED } });
   } catch (error) {
     logger.error(`Error while executing terraform command: ${error}`);
   } finally {
@@ -135,7 +131,7 @@ const writeTerraformResourceCreateConfigFileToDiskAndExecute = async (data: {
   resourceConfig: string;
   resourceType: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
 }) => {
   try {
     await writeTerraformConfigFileToDisk({
@@ -162,7 +158,7 @@ const writeTerraformResourceDestroyConfigFileToDiskAndExecute = async (data: {
   resourceConfig: string;
   resourceType: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
 }) => {
   try {
     await writeTerraformConfigFileToDisk({
@@ -190,7 +186,7 @@ const writeTerraformSpecificResourceDestroyConfigFileToDiskAndExecute = async (d
   resourceType: string;
   resourceId: string;
   terraformResourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
 }) => {
   try {
     await writeTerraformConfigFileToDisk({
@@ -214,7 +210,7 @@ const writeTerraformSpecificResourceDestroyConfigFileToDiskAndExecute = async (d
 
 const createResourceInCloud = async (data: {
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: (arg: { resourceId: string; resourceData: object }) => void;
   options?: DbQueryOptions;
 }) => {
   try {
@@ -238,11 +234,7 @@ const createResourceInCloud = async (data: {
   }
 };
 
-const destroyResourceInCloud = async (data: {
-  resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
-  options?: DbTransactionOptions;
-}) => {
+const destroyResourceInCloud = async (data: { resourceId: string; callBack: CallBackType; options?: DbTransactionOptions }) => {
   try {
     const { resourceId, callBack } = data;
     const resourceDetails = await ResourceRepository.findOne({ resourceId: resourceId });
@@ -267,7 +259,7 @@ const destroyResourceInCloud = async (data: {
 const destroySpecificResourceInCloud = async (data: {
   newResourceConfig: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
   options?: DbTransactionOptions;
 }) => {
   try {
@@ -296,7 +288,7 @@ const destroySpecificResourceInCloudWithoutUpdatingTerraformFile = async (data: 
   terraformResourceId: string;
   newResourceConfig: string;
   resourceId: string;
-  callBack: (arg: { resourceId: string; status: string }) => void;
+  callBack: CallBackType;
   options?: DbTransactionOptions;
 }) => {
   try {

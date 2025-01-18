@@ -83,10 +83,6 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
 
     const [terraformConfig, resourceConfig] = await Promise.all([terraformFilePromise, ec2InstanceFilePromise]);
 
-    // console.log(resourceConfig);
-
-    // return;
-
     const ec2DBInsertData = resourceList.map((resource) => {
       const data = {
         ...ec2Data,
@@ -119,7 +115,13 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       { session: session },
     );
 
-    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: updateEC2InstanceStatus, options: { session: session } });
+    const callBack = (callBackData: { resourceId: string; resourceData: object }) => {
+      const { resourceId, resourceData } = callBackData;
+      ResourceRepository.update({ resourceId: resourceId }, resourceData);
+      updateEC2InstanceStatus({ resourceId: resourceId, status: getValue(resourceData, 'status') });
+    };
+
+    await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: callBack, options: { session: session } });
 
     await session.commitTransaction();
     session.endSession();
@@ -133,10 +135,12 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
   }
 };
 
-const deleteEC2Instance = async (resourceId: string) => {
+const deleteEC2WithSameResourceId = async (resourceId: string) => {
   try {
-    const callBack = async (data: { resourceId: string; status: string }) => {
-      markEC2InstanceAsDeleted({ resourceId: data.resourceId, status: RESOURCE_STATUS.DELETED });
+    const callBack = (callBackData: { resourceId: string; resourceData: object }) => {
+      const { resourceId, resourceData } = callBackData;
+      ResourceRepository.update({ resourceId: resourceId }, resourceData);
+      markEC2InstanceAsDeleted({ resourceId: resourceId, status: getValue(resourceData, 'status') });
     };
 
     const response = await ExecutionService.destroyResourceInCloud({ resourceId: resourceId, callBack: callBack });
@@ -176,9 +180,13 @@ const deleteSpecificEC2Instance = async (ec2Id: string) => {
       resourceName: terraformResourceNameToDelete,
     });
 
-    const callBack = async (data: { resourceId: string; status: string }) => {
-      EC2Repository.update({ _id: ec2Instance._id }, { status: RESOURCE_STATUS.DELETED, isDeleted: true });
-      ResourceRepository.update({ resourceId: data.resourceId }, { resourceConfig: newResourceConfig, status: data.status });
+    const callBack = (callBackData: { resourceId: string; resourceData: object }) => {
+      const { resourceId, resourceData } = callBackData;
+      const resourceStatus = getValue(resourceData, 'status');
+      if (resourceStatus === RESOURCE_STATUS.RUNNING) {
+        EC2Repository.update({ _id: ec2Instance._id }, { status: RESOURCE_STATUS.DELETED, isDeleted: true });
+        ResourceRepository.update({ resourceId: resourceId }, { resourceConfig: newResourceConfig, ...resourceData });
+      }
     };
 
     // execute the resource deletion command
@@ -198,7 +206,7 @@ const deleteSpecificEC2Instance = async (ec2Id: string) => {
 const EC2Service = {
   createEC2Instance,
   updateEC2InstanceStatus,
-  deleteEC2Instance,
+  deleteEC2WithSameResourceId,
   deleteSpecificEC2Instance,
 };
 

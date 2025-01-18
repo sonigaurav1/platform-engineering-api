@@ -19,10 +19,10 @@ const createEC2Instance = async (req: CustomRequest, res: Response, next: NextFu
 const deleteEC2InstanceWithSameResourceId = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { resourceId } = req.params;
   try {
-    await EC2Service.deleteEC2Instance(resourceId);
+    await EC2Service.deleteEC2WithSameResourceId(resourceId);
     res.status(200).json({
       success: true,
-      message: 'EC2 resources deleted successfully',
+      message: 'EC2 instances deleted successfully',
     });
   } catch (error) {
     next(error);

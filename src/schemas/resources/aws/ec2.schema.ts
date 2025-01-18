@@ -18,8 +18,12 @@ export const createEC2InstanceSchema = z.object({
   numberOfInstance: z.number({ required_error: 'Number of instances is required' }).lte(3, `Number of instances should be less than or equal to 3`),
 });
 
-export const deleteEC2InstanceSchema = z.object({
+export const deleteResource = z.object({
   resourceId: z.string({ required_error: 'Resource ID is required' }).min(20, 'Resource ID should be of 20 characters'),
+});
+
+export const deleteEC2InstanceSchema = z.object({
+  instanceId: z.string({ required_error: 'Resource ID is required' }).min(20, 'Resource ID should be of 20 characters'),
   // instanceId: z.string({ required_error: 'Instance ID is required' }),
   // terraformResourceId: z.string({ required_error: 'Terraform resource ID is required' }),
 });
