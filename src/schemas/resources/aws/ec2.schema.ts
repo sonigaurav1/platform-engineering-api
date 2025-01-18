@@ -37,6 +37,10 @@ export interface EC2DBDoc extends EC2Instance, Document, CommonDbField {
     privateKey: string;
     publicKey: string;
   };
+  ipAddress: {
+    publicIP: string;
+    privateIP: string;
+  };
   status: string;
   instanceId: string;
   terraformResourceName: string;

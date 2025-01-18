@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { RESOURCE_STATUS, RESOURCE_TYPE } from '../../../constants/enum';
 import { DynamicMessages } from '../../../constants/error';
 import { transformEC2InstanceNumberToTerraformCompatible, transformResourceTags } from '../../../helpers/payloadTransformer.helper';
@@ -30,6 +31,40 @@ const updateEC2InstanceStatus = async (data: { resourceId: string; status: strin
 
 const markEC2InstanceAsDeleted = async (data: { resourceId: string; status: string; options?: DbQueryOptions }) => {
   return EC2Repository.updateMany({ resourceId: data.resourceId }, { status: data.status, isDeleted: true }, data.options);
+};
+const extractIpAddresses = (metaData: any): Array<{ privateIP: string; publicIP: string; resourceName: string }> => {
+  const metaDataAsJavascriptObject = JSON.parse(metaData);
+  const resourceList = getValue(metaDataAsJavascriptObject, 'values.root_module.child_modules', []) as unknown as any[];
+  return resourceList
+    .flatMap((resource) =>
+      resource.resources.map((item: any) => ({
+        privateIP: getValue(item, 'values.private_ip'),
+        publicIP: getValue(item, 'values.public_ip'),
+        resourceName: getValue(resource, 'address'),
+      })),
+    )
+    .filter((item) => !!item.publicIP);
+};
+
+const updateIpAddressOfEC2Instances = async (data: { metaData: any; resourceId: string }) => {
+  const { resourceId, metaData } = data;
+  const ipAddressList = extractIpAddresses(metaData);
+
+  const ipAddressUpdatePromiseList = ipAddressList.map((ipAddress) => {
+    const updateEC2Data = {
+      ipAddress: {
+        publicIP: ipAddress.publicIP,
+        privateIP: ipAddress.privateIP,
+      },
+    };
+    const queryCondition = {
+      resourceId: resourceId,
+      terraformResourceName: ipAddress.resourceName,
+    };
+    return EC2Repository.update(queryCondition, updateEC2Data);
+  });
+
+  await Promise.all(ipAddressUpdatePromiseList);
 };
 
 const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
@@ -119,6 +154,7 @@ const createEC2Instance = async (userData: UserDbDoc, ec2Data: EC2Instance) => {
       const { resourceId, resourceData } = callBackData;
       ResourceRepository.update({ resourceId: resourceId }, resourceData);
       updateEC2InstanceStatus({ resourceId: resourceId, status: getValue(resourceData, 'status') });
+      updateIpAddressOfEC2Instances({ resourceId: resourceId, metaData: getValue(resourceData, 'metaData') });
     };
 
     await ExecutionService.createResourceInCloud({ resourceId: resourceId, callBack: callBack, options: { session: session } });
@@ -168,7 +204,6 @@ const deleteSpecificEC2Instance = async (ec2Id: string) => {
     const metaData = JSON.parse(resource.metaData);
     const ec2Data = getValue(metaData, 'values.root_module.child_modules', []) as unknown as Array<unknown>;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const terraformEC2InstanceResourceIds = ec2Data.flatMap((item: any) => {
       return item.address;
     });
@@ -203,11 +238,22 @@ const deleteSpecificEC2Instance = async (ec2Id: string) => {
   }
 };
 
+const getEC2IpAddress = async (resourceId: string) => {
+  const resource = await ResourceRepository.findOne({ resourceId: resourceId }, { select: ['metaData'] });
+  if (!resource) {
+    throw createError(404, DynamicMessages.notFoundMessage(`Resource with resourceId: ${resourceId}`));
+  }
+  const ipList = extractIpAddresses(resource?.metaData);
+
+  return ipList;
+};
+
 const EC2Service = {
   createEC2Instance,
   updateEC2InstanceStatus,
   deleteEC2WithSameResourceId,
   deleteSpecificEC2Instance,
+  getEC2IpAddress,
 };
 
 export default EC2Service;

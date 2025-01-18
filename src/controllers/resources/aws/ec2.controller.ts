@@ -43,10 +43,24 @@ const deleteSpecificEC2Instance = async (req: CustomRequest, res: Response, next
   }
 };
 
+const getEC2IpAddress = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  const { resourceId } = req.params;
+  try {
+    const response = await EC2Service.getEC2IpAddress(resourceId);
+    res.status(200).json({
+      success: true,
+      response,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const EC2Controller = {
   createEC2Instance,
   deleteEC2InstanceWithSameResourceId,
   deleteSpecificEC2Instance,
+  getEC2IpAddress,
 };
 
 export default EC2Controller;

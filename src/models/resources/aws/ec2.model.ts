@@ -41,6 +41,9 @@ const ec2Schema = new Schema<EC2DBDoc>(
     terraformResourceName: {
       type: String,
     },
+    ipAddress: {
+      type: { publicIP: String, privateIP: String },
+    },
     status: {
       type: String,
       default: RESOURCE_STATUS.PENDING,
