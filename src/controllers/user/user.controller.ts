@@ -86,6 +86,18 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction): P
   }
 };
 
+const getUserProfile = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const profile = await UserService.getUserProfile({ userId: req.user });
+    res.status(200).json({
+      success: true,
+      profile: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const UserController = {
   createNewUser,
   loginUser,
@@ -93,6 +105,7 @@ const UserController = {
   passwordResetRequest,
   resetPassword,
   verifyUserAccount,
+  getUserProfile,
 };
 
 export default UserController;

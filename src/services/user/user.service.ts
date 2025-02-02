@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { JWT_SECRET_KEY } from '../../configs/server.config';
 import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserRoleRepository from '../../repositories/user/role.repository';
@@ -188,6 +189,20 @@ const getUserInfoById = async (id: string) => {
   return user;
 };
 
+const getUserProfile = async (data: { userId: string }): Promise<any> => {
+  const options = {
+    populate: [{ path: 'role', select: 'label scopes' }],
+    select: ['email'],
+  };
+  const user = await UserRepository.findOne(
+    {
+      _id: data.userId,
+    },
+    options,
+  );
+  return user;
+};
+
 const UserService = {
   saveUser,
   loginUser,
@@ -196,6 +211,7 @@ const UserService = {
   resetPassword,
   verifyAccount,
   getUserInfoById,
+  getUserProfile,
 };
 
 export default UserService;
