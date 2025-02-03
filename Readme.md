@@ -82,13 +82,16 @@ Follow these steps to set up and run the project:
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file in the root of your project. Add the following variables to the `.env` file:
+Create a `.env` file in the root of your project. Add the following variables to the `.env` file of copy pate from `.env.save` file:
 
 ```
 AWS_ACCESS_KEY_ID=your_access_key_id
 AWS_SECRET_ACCESS_KEY=your_secret_access_key
 DB_URI=your_mongodb_uri
 ENVIRONMENT=development
+DEFAULT_SENDER=yourEmail@example.com
+JWT_ACCESS_TOKEN=yourGeneratedJwtAccessToken
+JWT_REFRESH_TOKEN=yourGeneratedJwtRefreshToken
 ```
 
 ### 3. Install Dependencies
