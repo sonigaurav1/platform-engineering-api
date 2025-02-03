@@ -82,7 +82,7 @@ Follow these steps to set up and run the project:
 
 ### 2. Configure Environment Variables
 
-Create a `.env` file in the root of your project. Add the following variables to the `.env` file of copy pate from `.env.save` file:
+Create a `.env` file in the root of your project. Add the following variables to the `.env` file or copy paste from `.env.save` file:
 
 ```
 AWS_ACCESS_KEY_ID=your_access_key_id
