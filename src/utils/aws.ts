@@ -1,6 +1,8 @@
-import { EC2Client, DescribeImagesCommand } from '@aws-sdk/client-ec2';
+import { EC2Client, DescribeImagesCommand, DescribeInstanceTypesCommand } from '@aws-sdk/client-ec2';
 
 import type { AmiInfo } from '../schemas/resources/aws/ami.schema';
+import type { InstanceTypeCustomInfo } from '../schemas/resources/aws/instanceType.schema';
+import type { InstanceTypeInfo } from '@aws-sdk/client-ec2';
 
 const client = new EC2Client({ region: 'us-east-1' }); // Adjust region if needed
 
@@ -73,6 +75,38 @@ export const getFilteredAMIs = async (): Promise<AmiInfo[]> => {
     return selectedAMIs.sort((a, b) => a.os.localeCompare(b.os));
   } catch (error) {
     console.error('Error fetching AMIs:', error);
+    throw error;
+  }
+};
+
+export const getAvailableInstanceTypes = async (): Promise<InstanceTypeCustomInfo[]> => {
+  try {
+    let instanceTypes: InstanceTypeInfo[] = [];
+    let nextToken: string | undefined = undefined;
+
+    do {
+      const command: DescribeInstanceTypesCommand = new DescribeInstanceTypesCommand({
+        NextToken: nextToken, // Handle pagination
+        Filters: [{ Name: 'instance-type', Values: ['t2.*'] }],
+      });
+
+      const response = await client.send(command);
+      if (response.InstanceTypes) {
+        instanceTypes = [...instanceTypes, ...response.InstanceTypes];
+      }
+      nextToken = response.NextToken; // Check for more pages
+    } while (nextToken);
+
+    return instanceTypes
+      .map((instance) => ({
+        instanceType: instance.InstanceType || '',
+        freeTierEligible: instance.FreeTierEligible || false,
+        cpuInfo: instance.VCpuInfo,
+        memoryInfo: instance.MemoryInfo,
+      }))
+      .sort((a, b) => (a.memoryInfo?.SizeInMiB ?? 0) - (b.memoryInfo?.SizeInMiB ?? 0));
+  } catch (error) {
+    console.error('Error fetching instance types:', error);
     throw error;
   }
 };

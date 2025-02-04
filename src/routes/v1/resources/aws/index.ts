@@ -1,7 +1,7 @@
 import express from 'express';
 
+import awsResourceRouter from './awsResource.routes';
 import ec2Router from './ec2.routes';
-import awsResourceRouter from './resource.routes';
 
 const awsRouter = express.Router();
 

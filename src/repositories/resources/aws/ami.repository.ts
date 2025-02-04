@@ -42,7 +42,7 @@ const findAll = async (condition: object = {}, options: DbQueryOptions = {}): Pr
   return BaseRepository.findAll(AmiModel, condition, options);
 };
 
-const AmiRepository = {
+const AwsAmiRepository = {
   destroy,
   softDelete,
   findOne,
@@ -54,4 +54,4 @@ const AmiRepository = {
   updateMany,
 };
 
-export default AmiRepository;
+export default AwsAmiRepository;
