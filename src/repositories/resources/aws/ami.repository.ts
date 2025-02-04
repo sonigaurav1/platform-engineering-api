@@ -3,7 +3,7 @@ import BaseRepository from '../../base.repository';
 
 import type { DbQueryOptions, DbTransactionOptions } from '../../../interfaces/query.interface';
 import type { AMIDbDoc } from '../../../schemas/resources/aws/ami.schema';
-import type { ObjectId } from 'mongoose';
+import type { ObjectId, DeleteResult } from 'mongoose';
 
 const create = async (data: Partial<AMIDbDoc>, options?: DbTransactionOptions): Promise<AMIDbDoc> => {
   return BaseRepository.create(AmiModel, data, options);
@@ -24,6 +24,10 @@ const updateMany = async (condition: object, data: Partial<AMIDbDoc>, options: D
 
 const destroy = async (condition: object = {}, options: DbTransactionOptions = {}): Promise<AMIDbDoc | null> => {
   return BaseRepository.destroy(AmiModel, condition, options);
+};
+
+const bulkDelete = async (condition: object = {}, options: DbTransactionOptions = {}): Promise<DeleteResult> => {
+  return BaseRepository.bulkDelete(AmiModel, condition, options);
 };
 
 const softDelete = async (condition: object = {}): Promise<AMIDbDoc | null> => {
@@ -52,6 +56,7 @@ const AwsAmiRepository = {
   update,
   bulkSave,
   updateMany,
+  bulkDelete,
 };
 
 export default AwsAmiRepository;

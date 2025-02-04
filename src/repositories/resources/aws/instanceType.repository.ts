@@ -3,7 +3,7 @@ import BaseRepository from '../../base.repository';
 
 import type { DbQueryOptions, DbTransactionOptions } from '../../../interfaces/query.interface';
 import type { InstanceTypeDBDoc } from '../../../schemas/resources/aws/instanceType.schema';
-import type { ObjectId } from 'mongoose';
+import type { ObjectId, DeleteResult } from 'mongoose';
 
 const create = async (data: Partial<InstanceTypeDBDoc>, options?: DbTransactionOptions): Promise<InstanceTypeDBDoc> => {
   return BaseRepository.create(InstanceTypeModel, data, options);
@@ -24,6 +24,10 @@ const updateMany = async (condition: object, data: Partial<InstanceTypeDBDoc>, o
 
 const destroy = async (condition: object = {}, options: DbTransactionOptions = {}): Promise<InstanceTypeDBDoc | null> => {
   return BaseRepository.destroy(InstanceTypeModel, condition, options);
+};
+
+const bulkDelete = async (condition: object = {}, options: DbTransactionOptions = {}): Promise<DeleteResult> => {
+  return BaseRepository.bulkDelete(InstanceTypeModel, condition, options);
 };
 
 const softDelete = async (condition: object = {}): Promise<InstanceTypeDBDoc | null> => {
@@ -52,6 +56,7 @@ const AwsInstanceTypeRepository = {
   update,
   bulkSave,
   updateMany,
+  bulkDelete,
 };
 
 export default AwsInstanceTypeRepository;

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 import type { DbQueryOptions, DbTransactionOptions } from '../interfaces/query.interface';
-import type { Model, Document, ObjectId, UpdateWriteOpResult } from 'mongoose';
+import type { Model, Document, ObjectId, UpdateWriteOpResult, DeleteResult } from 'mongoose';
 
 const create = async <T extends Document>(model: Model<T>, data: Partial<T>, option?: DbTransactionOptions): Promise<T> => {
   const dbData = await model.create([data], { ...option });
@@ -85,6 +85,10 @@ const findAll = async <T extends Document>(model: Model<T>, condition: object = 
   return query.exec(); // Execute the query
 };
 
+const bulkDelete = async <T extends Document>(model: Model<T>, condition: object = {}, options: DbTransactionOptions = {}): Promise<DeleteResult> => {
+  return model.deleteMany(condition, { ...options });
+};
+
 const getDbSession = async () => {
   return mongoose.startSession();
 };
@@ -100,6 +104,7 @@ const BaseRepository = {
   getDbSession,
   bulkInsert,
   updateMany,
+  bulkDelete,
 };
 
 export default BaseRepository;

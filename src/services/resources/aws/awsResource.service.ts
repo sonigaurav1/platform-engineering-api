@@ -1,19 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { runDbTransaction } from '../../../helpers/db.helper';
 import AwsAmiRepository from '../../../repositories/resources/aws/ami.repository';
 import AwsInstanceTypeRepository from '../../../repositories/resources/aws/instanceType.repository';
 import { getAvailableInstanceTypes, getFilteredAMIs } from '../../../utils/aws';
 import logger from '../../../utils/logger';
 
 const saveAWSAmi = async () => {
-  try {
-    const amiList = await getFilteredAMIs();
-    if (amiList.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const amiListPayload = [...amiList] as any;
-      await AwsAmiRepository.bulkSave(amiListPayload);
-    }
-  } catch (error) {
-    logger.error(`Error at saveAWSAmi(): ${error}`);
-  }
+  await runDbTransaction(async (session) => {
+    const amiList = (await getFilteredAMIs()) as any[];
+    if (amiList.length === 0) return;
+
+    await AwsAmiRepository.bulkDelete({ isDeleted: false }, { session });
+    await AwsAmiRepository.bulkSave(amiList, { session });
+  });
 };
 
 const getAMIsList = async () => {
@@ -27,16 +26,13 @@ const getAMIsList = async () => {
 };
 
 const saveAWSInstanceType = async () => {
-  try {
-    const instanceTypes = await getAvailableInstanceTypes();
-    if (instanceTypes.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const instanceTypesPayload = [...instanceTypes] as any;
-      await AwsInstanceTypeRepository.bulkSave(instanceTypesPayload);
-    }
-  } catch (error) {
-    logger.error(`Error at saveAWSAmi(): ${error}`);
-  }
+  await runDbTransaction(async (session) => {
+    const instanceTypes = (await getAvailableInstanceTypes()) as any[];
+    if (instanceTypes.length === 0) return;
+
+    await AwsInstanceTypeRepository.bulkDelete({ isDeleted: false }, { session });
+    await AwsInstanceTypeRepository.bulkSave(instanceTypes, { session });
+  });
 };
 
 const getInstanceTypeList = async () => {
