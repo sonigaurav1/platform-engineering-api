@@ -44,6 +44,7 @@
     "typescript-eslint": "^8.8.1"
   },
   "dependencies": {
+    "@aws-sdk/client-ec2": "^3.741.0",
     "@aws-sdk/client-ses": "^3.716.0",
     "@aws-sdk/credential-provider-node": "^3.716.0",
     "bcrypt": "^5.1.1",

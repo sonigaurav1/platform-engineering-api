@@ -1,24 +1,33 @@
-import ResourceRepository from '../../../repositories/resources/resource.repository';
+import AmiRepository from '../../../repositories/resources/aws/ami.repository';
+import { getFilteredAMIs } from '../../../utils/aws';
+import logger from '../../../utils/logger';
 
-import type { DbTransactionOptions } from '../../../interfaces/query.interface';
-import type { ResourceDBDoc } from '../../../schemas/resources/aws/resource.schema';
-
-const saveResourceDetails = async (resourceDetails: Partial<ResourceDBDoc>, options?: DbTransactionOptions) => {
-  return ResourceRepository.create(resourceDetails, options);
+const saveAWSAmi = async () => {
+  try {
+    const amiList = await getFilteredAMIs();
+    if (amiList.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const amiListPayload = [...amiList] as any;
+      await AmiRepository.bulkSave(amiListPayload);
+    }
+  } catch (error) {
+    logger.error(`Error at saveAWSAmi(): ${error}`);
+  }
 };
 
-const updateResourceStatus = async (data: { resourceId: string; updatedData: object; options?: DbTransactionOptions }) => {
-  return ResourceRepository.update({ resourceId: data.resourceId }, data.updatedData, data.options);
+const getAMIsList = async () => {
+  try {
+    const amiList = await AmiRepository.findAll();
+    return amiList;
+  } catch (error) {
+    logger.error(`Error at getAMIsList(): ${error}`);
+    throw error;
+  }
 };
 
-const updateResourceMetaData = async (data: { resourceId: string; metaData: string; options?: DbTransactionOptions }) => {
-  return ResourceRepository.update({ resourceId: data.resourceId }, { metaData: data.metaData }, data.options);
+const AWSResourceService = {
+  getAMIsList,
+  saveAWSAmi,
 };
 
-const ResourceService = {
-  saveResourceDetails,
-  updateResourceStatus,
-  updateResourceMetaData,
-};
-
-export default ResourceService;
+export default AWSResourceService;

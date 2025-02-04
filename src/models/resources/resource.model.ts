@@ -1,6 +1,6 @@
 import { model, Schema } from 'mongoose';
 
-import type { ResourceDBDoc } from '../../schemas/resources/aws/resource.schema';
+import type { ResourceDBDoc } from '../../schemas/resources/resource.schema';
 import type { Model } from 'mongoose';
 
 const resourceSchema = new Schema<ResourceDBDoc>(

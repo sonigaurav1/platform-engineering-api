@@ -16,9 +16,8 @@ import logger from '../../../utils/logger';
 import { getValue } from '../../../utils/object';
 import { generateResourceId } from '../../../utils/uuid';
 import ExecutionService from '../execution/execution.service';
+import ResourceService from '../resource.service';
 import TemplateService from '../template/template.service';
-
-import ResourceService from './resource.service';
 
 import type { DbQueryOptions } from '../../../interfaces/query.interface';
 import type { EC2DBDoc, EC2Instance } from '../../../schemas/resources/aws/ec2.schema';
@@ -32,6 +31,7 @@ const updateEC2InstanceStatus = async (data: { resourceId: string; status: strin
 const markEC2InstanceAsDeleted = async (data: { resourceId: string; status: string; options?: DbQueryOptions }) => {
   return EC2Repository.updateMany({ resourceId: data.resourceId }, { status: data.status, isDeleted: true }, data.options);
 };
+
 const extractIpAddresses = (metaData: any): Array<{ privateIP: string; publicIP: string; resourceName: string }> => {
   const metaDataAsJavascriptObject = JSON.parse(metaData);
   const resourceList = getValue(metaDataAsJavascriptObject, 'values.root_module.child_modules', []) as unknown as any[];

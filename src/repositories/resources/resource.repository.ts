@@ -2,7 +2,7 @@ import { ResourceModel } from '../../models/resources/resource.model';
 import BaseRepository from '../base.repository';
 
 import type { DbQueryOptions, DbTransactionOptions } from '../../interfaces/query.interface';
-import type { ResourceDBDoc } from '../../schemas/resources/aws/resource.schema';
+import type { ResourceDBDoc } from '../../schemas/resources/resource.schema';
 import type { ObjectId } from 'mongoose';
 
 const create = async (data: Partial<ResourceDBDoc>, options?: DbTransactionOptions): Promise<ResourceDBDoc> => {

@@ -1,4 +1,4 @@
-import type { CommonDbField } from '../../shared/shared.schema';
+import type { CommonDbField } from '../shared/shared.schema';
 import type { Schema, Document } from 'mongoose';
 
 export interface ResourceDetails {
