@@ -9,7 +9,6 @@ const roleRouter = express.Router();
 roleRouter.post('/', validateRequestBody(userRoleCreationSchema), RoleController.createNewRole);
 roleRouter.put('/:id', validateRequestBody(userRoleCreationSchema), RoleController.updateRole);
 roleRouter.delete('/:id', RoleController.deleteRole);
-// roleRouter.get('/permission-list', RoleController.getPermissionsList);
 
 roleRouter.get('/:id', RoleController.getRole);
 

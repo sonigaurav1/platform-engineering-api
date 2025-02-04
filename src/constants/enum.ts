@@ -6,6 +6,11 @@ export const RESOURCE_STATUS = {
   RUNNING: 'running',
 };
 
+export const USER_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+};
+
 export const RESOURCE_TYPE = {
   EC2: 'EC2',
   S3: 'S3',
@@ -14,3 +19,4 @@ export const RESOURCE_TYPE = {
 };
 
 export const RESOURCE_STATUS_DB_ENUM = Object.values(RESOURCE_STATUS);
+export const USER_STATUS_DB_ENUM = Object.values(USER_STATUS);

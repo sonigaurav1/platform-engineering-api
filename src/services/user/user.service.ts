@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { JWT_SECRET_KEY } from '../../configs/server.config';
+import { USER_STATUS } from '../../constants/enum';
 import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserRoleRepository from '../../repositories/user/role.repository';
 import UserRepository from '../../repositories/user/user.repository';
@@ -89,6 +90,10 @@ const loginUser = async (
     throw createError(401, PLAIN_RESPONSE_MSG.invalidAuth);
   }
 
+  if (user.status !== USER_STATUS.ACTIVE) {
+    throw createError(401, PLAIN_RESPONSE_MSG.unVerifiedAccount);
+  }
+
   const authenticateUser = await hasSamePassword(payload.password, user);
 
   if (!authenticateUser) {
@@ -172,7 +177,7 @@ const verifyAccount = async (payload: UserAccountVerificationType): Promise<void
     throw createError(401, PLAIN_RESPONSE_MSG.invalidOtp);
   }
 
-  const updatedData = { status: 'active' };
+  const updatedData = { status: USER_STATUS.ACTIVE };
   const condition = { _id: user._id };
 
   await UserRepository.update(condition, updatedData);

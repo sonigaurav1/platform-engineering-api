@@ -74,4 +74,5 @@ export const PLAIN_RESPONSE_MSG = {
   passwordResetEmail: 'An email containing a password reset link has been sent to your email.',
   passwordReset: 'Password Reset Successfully',
   verifiedAccount: 'Account verified successfully',
+  unVerifiedAccount: 'Verify your account first.',
 };

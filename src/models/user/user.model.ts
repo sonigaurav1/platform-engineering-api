@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 
+import { USER_STATUS, USER_STATUS_DB_ENUM } from '../../constants/enum';
 import { generateHash } from '../../utils/bcrypt';
 
 import type { UserDbDoc } from '../../schemas/user/user.schema';
@@ -24,8 +25,8 @@ const userSchema = new Schema<UserDbDoc>(
     },
     status: {
       type: String,
-      default: 'inactive',
-      enum: ['active', 'inactive'],
+      default: USER_STATUS.INACTIVE,
+      enum: USER_STATUS_DB_ENUM,
     },
     isDeleted: {
       type: Boolean,
