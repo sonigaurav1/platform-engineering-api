@@ -92,6 +92,7 @@ ENVIRONMENT=development
 DEFAULT_SENDER=yourEmail@example.com
 JWT_ACCESS_TOKEN=yourGeneratedJwtAccessToken
 JWT_REFRESH_TOKEN=yourGeneratedJwtRefreshToken
+OPENAI_API_KEY=yourOpenAiKey
 ```
 
 ### 3. Install Dependencies
