@@ -35,8 +35,9 @@ const sendPasswordResetRequestEmail = async ({ email, code, url }: { email: stri
 
 const sendAccountCreationEmailToUser = async ({ email, otp, url }: { email: string; otp: string; url: string }): Promise<void> => {
   const subject = 'Account Creation';
-  const verificationUrl = `${url}/?email=${email}&otp=${otp}`;
+  const verificationUrl = `${url}?email=${email}&otp=${otp}`;
   const message = `Please copy and paste this url [${verificationUrl}] to verify your email. If you had not used the email, you can safely ignore this message.`;
+  console.debug(message);
 
   const pathName = path.join(__dirname, '../../templates/email/verify-email.html');
   const html = createHTMLToSend(pathName, { verificationUrl, email });

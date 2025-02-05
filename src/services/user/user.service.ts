@@ -63,7 +63,7 @@ const saveUser = async (payload: UserType, options: DbTransactionOptions = {}): 
   EmailService.sendAccountCreationEmailToUser({
     email: newUser.email,
     otp: otp,
-    url: 'http://localhost:5173/verfy-account',
+    url: 'http://localhost:5173/verify-account',
   });
   return response;
 };
