@@ -19,6 +19,8 @@ import ExecutionService from '../execution/execution.service';
 import ResourceService from '../resource.service';
 import TemplateService from '../template/template.service';
 
+import AwsOpenAiService from './openAi.service';
+
 import type { DbQueryOptions } from '../../../interfaces/query.interface';
 import type { EC2DBDoc, EC2Instance } from '../../../schemas/resources/aws/ec2.schema';
 import type { UserDbDoc } from '../../../schemas/user/user.schema';
@@ -248,12 +250,26 @@ const getEC2IpAddress = async (resourceId: string) => {
   return ipList;
 };
 
+const generateEc2InstanceTerraformConfigFile = async (ec2Data: EC2Instance) => {
+  try {
+    const openAiEc2Payload = {
+      ...ec2Data,
+      region: 'us-east-1',
+    };
+    await AwsOpenAiService.generateEc2InstanceTerraformConfigFile(openAiEc2Payload);
+  } catch (error) {
+    logger.error(`Error at generateEc2InstanceTerraformConfigFile(): ${error}`);
+    throw error;
+  }
+};
+
 const EC2Service = {
   createEC2Instance,
   updateEC2InstanceStatus,
   deleteEC2WithSameResourceId,
   deleteSpecificEC2Instance,
   getEC2IpAddress,
+  generateEc2InstanceTerraformConfigFile,
 };
 
 export default EC2Service;
