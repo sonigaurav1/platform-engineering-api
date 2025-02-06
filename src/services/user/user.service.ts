@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { JWT_SECRET_KEY } from '../../configs/server.config';
+import { FRONTEND_URL, JWT_SECRET_KEY } from '../../configs/server.config';
 import { USER_STATUS } from '../../constants/enum';
 import { DynamicMessages, PLAIN_RESPONSE_MSG } from '../../constants/error';
 import UserRoleRepository from '../../repositories/user/role.repository';
@@ -63,7 +63,7 @@ const saveUser = async (payload: UserType, options: DbTransactionOptions = {}): 
   EmailService.sendAccountCreationEmailToUser({
     email: newUser.email,
     otp: otp,
-    url: 'http://localhost:5173/verify-account',
+    url: `${FRONTEND_URL}/verify-account`,
   });
   return response;
 };
@@ -143,7 +143,7 @@ const passwordResetRequest = async (payload: UserPasswordResetRequestType): Prom
   await EmailService.sendPasswordResetRequestEmail({
     email: user.email,
     code: otp,
-    url: 'http://localhost:5173/new-password',
+    url: `${FRONTEND_URL}/new-password`,
   });
 };
 
