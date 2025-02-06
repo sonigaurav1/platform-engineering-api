@@ -7,6 +7,7 @@ import {
   getResourceFileWrittenPath,
   removeSpecificEC2FromTerraformResourceConfig,
 } from '../../../helpers/resource.helper';
+import { EC2Model } from '../../../models/resources/aws/ec2.model';
 import BaseRepository from '../../../repositories/base.repository';
 import EC2Repository from '../../../repositories/resources/aws/ec2.repository';
 import ResourceRepository from '../../../repositories/resources/resource.repository';
@@ -15,9 +16,12 @@ import createError from '../../../utils/http.error';
 import logger from '../../../utils/logger';
 import { getValue } from '../../../utils/object';
 import { generateResourceId } from '../../../utils/uuid';
+import PaginationService from '../../pagination/pagination.service';
 import ExecutionService from '../execution/execution.service';
 import ResourceService from '../resource.service';
 import TemplateService from '../template/template.service';
+
+import AwsOpenAiService from './openAi.service';
 
 import type { DbQueryOptions } from '../../../interfaces/query.interface';
 import type { EC2DBDoc, EC2Instance } from '../../../schemas/resources/aws/ec2.schema';
@@ -248,12 +252,55 @@ const getEC2IpAddress = async (resourceId: string) => {
   return ipList;
 };
 
+const generateEc2InstanceTerraformConfigFile = async (ec2Data: EC2Instance) => {
+  try {
+    const openAiEc2Payload = {
+      ...ec2Data,
+      region: 'us-east-1',
+    };
+    await AwsOpenAiService.generateEc2InstanceTerraformConfigFile(openAiEc2Payload);
+  } catch (error) {
+    logger.error(`Error at generateEc2InstanceTerraformConfigFile(): ${error}`);
+    throw error;
+  }
+};
+
+const getUserEc2InstanceList = async (payload: { userId: string; page: number; limit: number }) => {
+  const { userId, page, limit } = payload;
+  const option = {
+    condition: {
+      userId: userId,
+    },
+    page: page,
+    limit: limit,
+    select: '-sshKey',
+  };
+  const instanceLists = await PaginationService.paginate(EC2Model, option);
+  // const instanceLists = await EC2Repository.findAll({ userId: userId }, { select: ['-sshKey'] });
+  return instanceLists;
+};
+
+const getUserEc2InstanceDetails = async (payload: { userId: string; instanceId: string }) => {
+  const { userId, instanceId } = payload;
+  const instanceDetails = await EC2Repository.findOne(
+    {
+      _id: instanceId,
+      userId: userId,
+    },
+    { select: ['-sshKey'] },
+  );
+  return instanceDetails;
+};
+
 const EC2Service = {
   createEC2Instance,
   updateEC2InstanceStatus,
   deleteEC2WithSameResourceId,
   deleteSpecificEC2Instance,
   getEC2IpAddress,
+  generateEc2InstanceTerraformConfigFile,
+  getUserEc2InstanceList,
+  getUserEc2InstanceDetails,
 };
 
 export default EC2Service;
