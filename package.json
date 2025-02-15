@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/app.ts",
+    "start": "node dist/app.js",
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
     "style:fix": "npm run prettier:fix && npm run prettier:check && npm run lint:fix",
     "style:check": "npm run prettier:check && npm run lint",
